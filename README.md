@@ -7,6 +7,7 @@ Includes:
 - some Ring middleware (JSON params using [Cheshire](https://github.com/dakrone/cheshire), `*host*` binding)
 - syntactic sugar around [liberator](https://github.com/clojure-liberator/liberator) and [compojure](https://github.com/weavejester/compojure)
 - a [Swagger](https://github.com/wordnik/swagger-core/wiki) implementation (hence the name)
+- JSON Schema validation using [this awesome library](https://github.com/fge/json-schema-validator) (the same schema is used for validation and documentation -- WINNING!)
 
 ## Usage
 
