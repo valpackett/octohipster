@@ -3,7 +3,7 @@
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator json host cors util]))
+        [swaggerator json host cors validator util]))
 
 (def ^:dynamic *controller-url* nil)
 (def ^:dynamic *swagger-version* "1.1")
@@ -28,14 +28,15 @@
 
 (defmacro resource [url binds desc & kvs]
   (let [k (apply hash-map kvs)
-        schema (eval (-> k :schema))]
+        schema (-> k :schema eval)]
     (conj! *swagger-apis*
       {:path (str *controller-url* (swaggerify-url-template url))
        :description desc
        :operations (resource->operations k)})
     (assoc! *swagger-schemas* (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
-       (lib/resource ~@kvs))))
+       (-> (lib/resource ~@kvs)
+           (wrap-json-schema-validator ~schema)))))
 
 (defmacro defcontroller [n url desc & body]
   (intern *ns* n
