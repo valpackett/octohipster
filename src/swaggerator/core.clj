@@ -38,23 +38,25 @@
        (-> (lib/resource ~@kvs)
            (wrap-json-schema-validator ~schema)))))
 
+(defmacro controller [url desc & body]
+  (binding [*controller-url* url
+            *swagger-apis* (transient [])
+            *swagger-schemas* (transient {})]
+    (with-meta
+      (eval `(-> (cmpj/routes ~@body)
+                  wrap-host-bind
+                  wrap-cors
+                  wrap-json-params
+                  wrap-keyword-params
+                  wrap-nested-params
+                  wrap-params))
+      {:resourcePath url
+       :description desc
+       :apis (persistent! *swagger-apis*)
+       :models (persistent! *swagger-schemas*)})))
+
 (defmacro defcontroller [n url desc & body]
-  (intern *ns* n
-    (binding [*controller-url* url
-              *swagger-apis* (transient [])
-              *swagger-schemas* (transient {})]
-      (with-meta
-        (eval `(-> (cmpj/routes ~@body)
-                    wrap-host-bind
-                    wrap-cors
-                    wrap-json-params
-                    wrap-keyword-params
-                    wrap-nested-params
-                    wrap-params))
-        {:resourcePath url
-         :description desc
-         :apis (persistent! *swagger-apis*)
-         :models (persistent! *swagger-schemas*)}))))
+  (intern *ns* n (eval `(controller ~url ~desc ~@body))))
 
 (defn nest [x]
   (cmpj/context (-> x meta :resourcePath) [] x))
