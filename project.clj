@@ -11,7 +11,11 @@
                  [com.github.fge/json-schema-validator "1.99.3"]]
   :profiles {:dev {:dependencies [[speclj "2.5.0"]
                                   [ring-mock "0.1.3"]]}}
-  :plugins [[speclj "2.5.0"]]
+  :plugins [[speclj "2.5.0"]
+            [lein-release "1.0.0"]]
   :bootclasspath true
+  :lein-release {:deploy-via :lein-deploy}
+  :repositories [["snapshots" {:url "https://clojars.org/repo" :creds :gpg}]
+                 ["releases"  {:url "https://clojars.org/repo" :creds :gpg}]]
   :warn-on-reflection true
   :test-paths ["spec/"])
