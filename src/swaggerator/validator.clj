@@ -28,9 +28,11 @@
 (defn wrap-json-schema-validator [handler schema]
   (let [v (make-validator schema)]
     (fn [req]
-      (let [results (-> req :json-params v)]
-        (if (= results "{}")
-          (handler req)
-          {:status 422
-           :headers {"Content-Type" "application/json;charset=utf-8"}
-           :body results})))))
+      (if (#{:post :put :patch} (-> req :request-method))
+        (let [results (-> req :json-params v)]
+          (if (= results "{}")
+            (handler req)
+            {:status 422
+             :headers {"Content-Type" "application/json;charset=utf-8"}
+             :body results}))
+        (handler req)))))
