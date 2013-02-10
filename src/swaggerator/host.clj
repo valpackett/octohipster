@@ -7,7 +7,5 @@
     (binding [*host* (str (-> req :scheme name)
                           "://"
                           (or (get-in req [:headers "host"])
-                              (-> req :server-name))
-                          (when (not= (-> req :server-port) 80)
-                            (str ":" (-> req :server-port))))]
+                              (-> req :server-name)))]
       (handler req))))
