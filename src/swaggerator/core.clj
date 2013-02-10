@@ -30,9 +30,9 @@
   (let [k (apply hash-map kvs)
         schema (-> k :schema eval)]
     (conj! *swagger-apis*
-      {:path (str *controller-url* (swaggerify-url-template url))
-       :description desc
-       :operations (resource->operations k)})
+      {:path (str *controller-url* (-> url eval swaggerify-url-template))
+       :description (eval desc)
+       :operations (-> k eval resource->operations)})
     (assoc! *swagger-schemas* (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
        (-> (lib/resource ~@kvs)
