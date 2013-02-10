@@ -7,6 +7,8 @@
   (:require [cheshire.core :as json]
             [cheshire.factory :as factory]))
 
+(set! *warn-on-reflection* true)
+
 (def mapper (ObjectMapper.))
 
 (defn ^JsonNode clojure->jsonnode [x]
@@ -21,8 +23,8 @@
     (fn [x]
       (let [root (.asJsonObject (.validate so (clojure->jsonnode x)))
             sw (StringWriter.)
-            jgen (.createJsonGenerator ^JsonFactory (or factory/*json-factory* factory/json-factory) sw)]
-        (.writeTree mapper jgen root)
+            jgen (.createJsonGenerator (or factory/*json-factory* factory/json-factory) sw)]
+        (.writeTree ^ObjectMapper mapper jgen root)
         (.toString sw)))))
 
 (defn wrap-json-schema-validator [handler schema]
