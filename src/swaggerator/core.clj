@@ -12,11 +12,10 @@
 (def ^:dynamic *global-error-responses* [])
 (def ^:dynamic *global-parameters* [])
 
-(defn- http-methods [kvs]
-  (filter identity (map #{:get :post :put :delete} (-> kvs :method-allowed?))))
+(def request-method-in lib/request-method-in)
 
-(defn- resource->operations [kvs]
-  (mapv #(let [doc (-> kvs :doc %)]
+(defn- resource->operations [doc]
+  (mapv #(let [doc (-> doc %)]
            (-> doc
                (assoc :httpMethod (-> % name string/upper-case))
                (assoc :responseClass (or (-> doc :responseClass) "void"))
@@ -24,7 +23,7 @@
                                          *global-parameters*))
                (assoc :errorResponses (concatv (or (-> doc :errorResponses) [])
                                              *global-error-responses*))))
-        (http-methods kvs)))
+        (keys doc)))
 
 (defmacro resource [url binds desc & kvs]
   (let [k (apply hash-map kvs)
@@ -32,7 +31,7 @@
     (conj! *swagger-apis*
       {:path (str *controller-url* (-> url eval swaggerify-url-template))
        :description (eval desc)
-       :operations (-> k eval resource->operations)})
+       :operations (resource->operations (-> k :doc eval))})
     (assoc! *swagger-schemas* (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
        (-> (lib/resource ~@kvs)

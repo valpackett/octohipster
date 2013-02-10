@@ -27,7 +27,7 @@ Minimal example:
 (defcontroller things "/things"
   "Operations about things"
   (resource "/:name" [name] "Operations with individual things"
-    :method-allowed? [:get :head]
+    :method-allowed? (request-method-in :get :head)
     :schema thing-schema
     :doc {:get {:nickname "getThing"
                 :responseClass "Thing"
