@@ -5,10 +5,9 @@
   (:use [ring.middleware params keyword-params nested-params]
         [swaggerator json host cors validator util]))
 
-(def ^:dynamic *controller-url* "")
 (def ^:dynamic *swagger-version* "1.1")
-(def ^:dynamic *swagger-apis* (transient []))
-(def ^:dynamic *swagger-schemas* (transient {}))
+(def ^:dynamic *swagger-apis* (atom []))
+(def ^:dynamic *swagger-schemas* (atom {}))
 (def ^:dynamic *global-error-responses* [])
 (def ^:dynamic *global-parameters* [])
 
@@ -36,34 +35,33 @@
 (defmacro resource [url binds desc & kvs]
   (let [k (apply hash-map kvs)
         schema (-> k :schema eval)]
-    (conj! *swagger-apis*
-      {:path (str *controller-url* (-> url eval swaggerify-url-template))
+    (swap! *swagger-apis* conj
+      {:path (-> url eval swaggerify-url-template)
        :description (eval desc)
        :operations (-> k :doc eval resource->operations)})
-    (assoc! *swagger-schemas* (-> schema :id) schema)
+    (swap! *swagger-schemas* assoc (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
        (-> (lib/resource ~@kvs)
            (wrap-json-schema-validator ~schema)))))
 
 (defmacro controller [url desc & body]
-  (binding [*controller-url* url
-            *swagger-apis* (transient [])
-            *swagger-schemas* (transient {})]
-    (with-meta
-      (eval `(-> (cmpj/routes ~@body)
-                  wrap-host-bind
-                  wrap-cors
-                  wrap-json-params
-                  wrap-keyword-params
-                  wrap-nested-params
-                  wrap-params))
-      {:resourcePath (eval url)
-       :description (eval desc)
-       :apis (persistent! *swagger-apis*)
-       :models (persistent! *swagger-schemas*)})))
+  (binding [*swagger-apis* (atom [])
+            *swagger-schemas* (atom {})]
+    `(with-meta
+       (-> (cmpj/routes ~@body)
+           wrap-host-bind
+           wrap-cors
+           wrap-json-params
+           wrap-keyword-params
+           wrap-nested-params
+           wrap-params)
+       {:resourcePath ~url
+        :description ~desc
+        :apis (map #(assoc % :path (str ~url (:path %))) @*swagger-apis*)
+        :models @*swagger-schemas*})))
 
 (defmacro defcontroller [n url desc & body]
-  (intern *ns* n (eval `(controller ~url ~desc ~@body))))
+  `(def ~n (controller ~url ~desc ~@body)))
 
 (defn nest [x]
   (cmpj/context (-> x meta :resourcePath) [] x))
