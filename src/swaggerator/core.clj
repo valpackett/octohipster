@@ -57,8 +57,8 @@
                   wrap-keyword-params
                   wrap-nested-params
                   wrap-params))
-      {:resourcePath url
-       :description desc
+      {:resourcePath (eval url)
+       :description (eval desc)
        :apis (persistent! *swagger-apis*)
        :models (persistent! *swagger-schemas*)})))
 
