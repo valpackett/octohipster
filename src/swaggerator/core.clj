@@ -5,10 +5,10 @@
   (:use [ring.middleware params keyword-params nested-params]
         [swaggerator json host cors validator util]))
 
-(def ^:dynamic *controller-url* nil)
+(def ^:dynamic *controller-url* "")
 (def ^:dynamic *swagger-version* "1.1")
-(def ^:dynamic *swagger-apis* nil)
-(def ^:dynamic *swagger-schemas* nil)
+(def ^:dynamic *swagger-apis* (transient []))
+(def ^:dynamic *swagger-schemas* (transient {}))
 (def ^:dynamic *global-error-responses* [])
 (def ^:dynamic *global-parameters* [])
 
@@ -35,11 +35,12 @@
 
 (defmacro resource [url binds desc & kvs]
   (let [k (apply hash-map kvs)
-        schema (-> k :schema eval)]
+        ek (eval k)
+        schema (-> ek :schema)]
     (conj! *swagger-apis*
       {:path (str *controller-url* (-> url eval swaggerify-url-template))
        :description (eval desc)
-       :operations (resource->operations (-> k :doc eval))})
+       :operations (-> ek :doc resource->operations)})
     (assoc! *swagger-schemas* (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
        (-> (lib/resource ~@kvs)
