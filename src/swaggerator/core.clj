@@ -35,12 +35,11 @@
 
 (defmacro resource [url binds desc & kvs]
   (let [k (apply hash-map kvs)
-        ek (eval k)
-        schema (-> ek :schema)]
+        schema (-> k :schema eval)]
     (conj! *swagger-apis*
       {:path (str *controller-url* (-> url eval swaggerify-url-template))
        :description (eval desc)
-       :operations (-> ek :doc resource->operations)})
+       :operations (-> k :doc eval resource->operations)})
     (assoc! *swagger-schemas* (-> schema :id) schema)
     `(cmpj/ANY ~url ~binds
        (-> (lib/resource ~@kvs)
