@@ -9,13 +9,16 @@
                  [liberator "0.8.0"]
                  [cheshire "5.0.1"]
                  [com.github.fge/json-schema-validator "1.99.3"]]
-  :profiles {:dev {:dependencies [[speclj "2.5.0"]
-                                  [com.novemberain/monger "1.4.2"]
-                                  [http-kit "2.0.0-RC4"]
-                                  [ring-ratelimit "0.1.0"]
-                                  [ring-mock "0.1.3"]]}}
+  :profiles {:1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}
+             :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+             :dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
+                                  [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]
+                                  [http-kit "2.0.0-RC4"           :exclusions [org.clojure/clojure]]
+                                  [ring-ratelimit "0.1.0"         :exclusions [org.clojure/clojure]]
+                                  [ring-mock "0.1.3"              :exclusions [org.clojure/clojure]]]}}
   :plugins [[speclj "2.5.0"]
             [lein-release "1.0.0"]]
+  :aliases {"all" ["with-profile" "dev:dev,1.5"]}
   :bootclasspath true
   :lein-release {:deploy-via :lein-deploy}
   :repositories [["snapshots" {:url "https://clojars.org/repo" :creds :gpg}]

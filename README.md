@@ -1,4 +1,6 @@
-# swaggerator
+# swaggerator 
+[![Build
+Status](https://travis-ci.org/myfreeweb/swaggerator.png)](https://travis-ci.org/myfreeweb/swaggerator)
 
 A REST API micro-framework for Clojure.
 
