@@ -96,3 +96,10 @@
           (map swagger-controller-route xs))
         wrap-host-bind
         wrap-cors)))
+
+(defn params-rel [rel]
+  (fn [ctx]
+    (let [tpl (uri-template-for-rel ctx rel)]
+      (doseq [[k v] (-> ctx :request :params)]
+        (.set tpl (name k) v))
+      (.expand tpl))))

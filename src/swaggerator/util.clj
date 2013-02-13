@@ -1,5 +1,6 @@
 (ns swaggerator.util
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string])
+  (:import [com.damnhandy.uri.template UriTemplate]))
 
 (defn concatv [& xs] (into [] (apply concat xs)))
 
@@ -23,3 +24,9 @@
 
 (defn uri-alter-query-params [req x]
   (str (:uri req) (alter-query-params req x)))
+
+(defn uri-template-for-rel [ctx rel]
+  (UriTemplate/fromTemplate
+    (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
+        first
+        :href)))

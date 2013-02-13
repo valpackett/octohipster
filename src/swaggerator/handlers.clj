@@ -1,6 +1,5 @@
 (ns swaggerator.handlers
-  (:use [swaggerator json link util])
-  (:import [com.damnhandy.uri.template UriTemplate]))
+  (:use [swaggerator json link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))
 
@@ -23,10 +22,7 @@
 
 (defn add-self-hal-link [ctx dk x]
   (let [lm (or ((-> ctx :resource :link-mapping)) {})
-        rel (dk lm)
-        tpl (UriTemplate/fromTemplate (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
-                                          first
-                                          :href)) ]
+        tpl (uri-template-for-rel ctx (dk lm))]
     (doseq [[k v] x]
       (.set tpl (name k) v))
     (-> x

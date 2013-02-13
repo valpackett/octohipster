@@ -72,7 +72,7 @@
 
         :post-redirect? true
         :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
-        :see-other (fn [ctx] (str "/contacts/" (-> ctx :request :params :name)))
+        :see-other (params-rel "contact")
 
         :doc {:get {:nickname "getContacts"
                     :responseClass "Contact"
