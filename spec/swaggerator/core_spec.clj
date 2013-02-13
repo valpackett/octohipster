@@ -55,7 +55,10 @@
                                        :summary "Get the thing"
                                        :notes "Notes"
                                        :responseClass "Thing"
-                                       :errorResponses []
+                                       :errorResponses [{:code 422
+                                                         :reason "The data did not pass schema validation"}
+                                                        {:code 404
+                                                         :reason "Resource not found"}]
                                        :parameters [{:name "name"
                                                      :description "Name"
                                                      :dataType "string"
