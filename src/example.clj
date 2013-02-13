@@ -71,7 +71,6 @@
         :handle-ok (-> contact-presenter default-list-handler)
 
         :post-redirect? true
-        :post-is-create? true
         :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
         :see-other (fn [ctx] (str "/contacts/" (-> ctx :request :params :name)))
 
@@ -100,8 +99,9 @@
 
       :can-put-to-missing? false
       :put! (fn [ctx]
-              (let [entry (-> ctx :request :params (contacts-update! (:data ctx)))]
-                {:data (contacts-find-by-name (:name entry))}))
+              {:data (-> ctx :request :params
+                         (contacts-update! (:data ctx))
+                         :name contacts-find-by-name)})
 
       :delete! (fn [ctx]
                  (contacts-delete! (:data ctx))
