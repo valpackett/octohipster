@@ -40,11 +40,3 @@
     (let [rsp (handler req)]
       (assoc rsp :link-templates
              (concatv (or (:link-templates rsp) []) tpls)))))
-
-(defn wrap-handler-link [handler]
-  (fn [ctx]
-    (let [result (handler ctx)]
-      (if (map? result)
-        (assoc result :links (:links ctx))
-        {:body result
-         :links (:links ctx)}))))
