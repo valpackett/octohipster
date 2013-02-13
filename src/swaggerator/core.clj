@@ -88,18 +88,20 @@
                  wrap-nested-params
                  wrap-params)))
 
-(defmacro controller [url desc & body]
+(defmacro controller [n url desc & body]
   (swap! *swagger-apis* (constantly []))
   (swap! *swagger-schemas* (constantly {}))
   `(with-meta
      (cmpj/routes ~@body)
      {:resourcePath ~url
+      :name ~n
       :description ~desc
       :apis (map #(assoc % :path (str ~url (:path %))) @*swagger-apis*)
       :models @*swagger-schemas*}))
 
 (defmacro defcontroller [n url desc & body]
-  `(def ~n (controller ~url ~desc ~@body)))
+  (let [nn (keyword n)]
+    `(def ~n (controller ~nn ~url ~desc ~@body))))
 
 (defn nest [x]
   (cmpj/context (-> x meta :resourcePath) [] x))
@@ -136,7 +138,7 @@
   (cmpj/GET "/" []
     (serve-hal-json
       {:_links (into {}
-                     (mapv (fn [x] [(-> x meta :resourcePath (string/replace "/" "")) ; FIXME: use var name somehow
+                     (mapv (fn [x] [(-> x meta :name)
                                     {:href  (-> x meta :resourcePath)
                                      :title (-> x meta :description)}]) xs))
        :_embedded {:schema (assoc (make-schema xs) :_links {:self {:href "/schema"}})}})))

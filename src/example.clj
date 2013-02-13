@@ -116,4 +116,4 @@
 
 (defn -main [& args]
   (run-server app {:port 8008})
-  (prn "Running on 8008"))
+  (println "Running on 8008"))
