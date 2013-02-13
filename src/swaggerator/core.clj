@@ -87,3 +87,15 @@
           (map swagger-controller-route xs))
         wrap-host-bind
         wrap-cors)))
+
+(defn list-handler
+  ([presenter] (list-handler presenter :data))
+  ([presenter k]
+   (fn [ctx]
+     (assoc ctx k (mapv presenter (k ctx))))))
+
+(defn entry-handler
+  ([presenter] (entry-handler presenter :data))
+  ([presenter k]
+   (fn [ctx]
+     (assoc ctx k (presenter (k ctx))))))

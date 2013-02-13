@@ -4,49 +4,14 @@ A REST API micro-framework for Clojure.
 
 Includes:
 
-- some Ring middleware (JSON params using [Cheshire](https://github.com/dakrone/cheshire), `*host*` binding)
+- some Ring middleware (JSON params using [Cheshire](https://github.com/dakrone/cheshire), `*host*` binding, pagination, link header)
 - syntactic sugar around [liberator](https://github.com/clojure-liberator/liberator) and [compojure](https://github.com/weavejester/compojure)
 - a [Swagger](https://github.com/wordnik/swagger-core/wiki) implementation (hence the name)
 - JSON Schema validation using [this awesome library](https://github.com/fge/json-schema-validator) (the same schema is used for validation and documentation -- WINNING!)
 
 ## Usage
 
-Minimal example:
-
-```clojure
-(ns your.app
-  (:use [compojure.core :only [defroutes]]
-        [swaggerator core]))
-
-(def thing-schema
-  {:id "Thing"
-   :properties {:name {:type "string"}}
-   :required [:name]})
-
-; Controllers are collections of resources
-(defcontroller things "/things"
-  "Operations about things"
-  (route "/:name" [name]
-    (resource "Operations with individual things"
-      :method-allowed? (request-method-in :get :head)
-      :schema thing-schema
-      :doc {:get {:nickname "getThing"
-                  :responseClass "Thing"
-                  :summary "Get the thing"
-                  :notes "Notes"
-                  :parameters [{:name "name"
-                                :description "Name"
-                                :dataType "string"
-                                :required true
-                                :paramType "path"}]}}
-      :handle-ok (fn [ctx] (str "Name: " name)))))
-
-(defroutes app-routes
-  (nest things)
-  (swagger-routes things))
-
-; Try /api-docs.json in this app
-```
+See src/example.clj
 
 ## License
 
