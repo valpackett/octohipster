@@ -3,7 +3,7 @@
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator json host cors link validator util]))
+        [swaggerator json host cors link validator handlers util]))
 
 (def ^:dynamic *url* (atom ""))
 (def ^:dynamic *swagger-version* "1.1")
@@ -33,12 +33,14 @@
   (let [k (apply hash-map kvs)
         link-tpls (-> k :link-templates eval)
         schema (-> k :schema eval)]
+    (swap! *handled-content-types* (constantly []))
     (swap! *swagger-apis* conj
       {:path (-> @*url* eval swaggerify-url-template)
        :description (eval desc)
        :operations (-> k :doc eval resource->operations)})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
-     `(-> (lib/resource ~@kvs)
+     `(-> (lib/resource ~@kvs
+                        :available-media-types @*handled-content-types*)
           (wrap-add-link-templates ~link-tpls)
           (wrap-json-schema-validator ~schema))))
 

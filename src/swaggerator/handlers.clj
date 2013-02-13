@@ -1,9 +1,12 @@
 (ns swaggerator.handlers
   (:use [swaggerator json link]))
 
+(def ^:dynamic *handled-content-types* (atom []))
+
 (defn wrap-handler-json
   ([handler] (wrap-handler-json handler :data))
   ([handler k]
+    (swap! *handled-content-types* conj "application/json")
     (fn [ctx]
       (case (-> ctx :representation :media-type)
         "application/json" (-> ctx handler k jsonify)

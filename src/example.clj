@@ -63,7 +63,6 @@
       (resource "Operations with all contacts"
         :method-allowed? (request-method-in :get :head :post)
         :schema contacts-schema
-        :available-media-types ["application/json"]
         :link-templates [{:href "/contacts/{name}" :rel "contact"}]
 
         ; :data is the convention used by wrap-handler-json
@@ -91,7 +90,6 @@
     (resource "Operations with individual contacts"
       :method-allowed? (request-method-in :get :head :put :delete)
       :schema contacts-schema
-      :available-media-types ["application/json"]
       :respond-with-entity? true
       :new? false
       :exists? (fn [ctx]
