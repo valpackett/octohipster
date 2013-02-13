@@ -7,7 +7,7 @@
 (defn app [req]
   {:status 200
    :headers {}
-   :body (-> req :pagination str)})
+   :body (str {:limit *limit* :skip *skip*})})
 
 (def app-1-page
   (-> app

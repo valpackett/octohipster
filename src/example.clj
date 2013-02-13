@@ -22,11 +22,11 @@
    :required [:name]})
 (defn contacts-count []
   (mc/count "contacts"))
-(defn contacts-all [{s :skip l :limit}]
+(defn contacts-all []
   (mq/with-collection "contacts"
     (mq/find {})
-    (mq/skip s)
-    (mq/limit l)))
+    (mq/skip *skip*)
+    (mq/limit *limit*)))
 (defn contacts-find-by-name [x]
   (mc/find-one-as-map "contacts" {:name x}))
 (defn contacts-insert! [x]
@@ -67,7 +67,7 @@
 
         ; :data is the convention used by wrap-handler-json
         ; handlers (wrap-handler-*) are like ring middleware, except work with liberator contexts
-        :exists? (fn [ctx] {:data (-> ctx :request :pagination contacts-all)})
+        :exists? (fn [ctx] {:data (contacts-all)})
         :handle-ok (-> contact-presenter list-handler wrap-handler-json)
 
         :post-redirect? true
