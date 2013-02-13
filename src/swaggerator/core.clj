@@ -28,7 +28,7 @@
                                              *global-error-responses*))))
         (keys doc)))
 
-(defmacro resource [url binds desc & kvs]
+(defmacro raw-resource [url desc & kvs]
   (let [k (apply hash-map kvs)
         schema (-> k :schema eval)]
     (swap! *swagger-apis* conj
@@ -36,9 +36,11 @@
        :description (eval desc)
        :operations (-> k :doc eval resource->operations)})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
-    `(cmpj/ANY ~url ~binds
-       (-> (lib/resource ~@kvs)
-           (wrap-json-schema-validator ~schema)))))
+     `(-> (lib/resource ~@kvs)
+          (wrap-json-schema-validator ~schema))))
+
+(defmacro resource [url binds desc & kvs]
+  `(cmpj/ANY ~url ~binds (raw-resource ~url ~desc ~@kvs)))
 
 (defmacro controller [url desc & body]
   (binding [*swagger-apis* (atom [])
