@@ -26,3 +26,11 @@
     {:status 200
      :headers {"Content-Type" "application/json"}
      :body (jsonify x)}))
+
+(defn wrap-handler-json
+  ([handler] (wrap-handler-json handler :data))
+  ([handler k]
+    (fn [ctx]
+      (case (-> ctx :representation :media-type)
+        "application/json" (-> ctx handler k jsonify)
+        (handler ctx)))))
