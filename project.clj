@@ -10,7 +10,6 @@
                  [cheshire "5.0.1"]
                  [com.github.fge/json-schema-validator "1.99.3"]]
   :profiles {:1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}
-             :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
              :dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
                                   [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]
                                   [http-kit "2.0.0-RC4"           :exclusions [org.clojure/clojure]]
