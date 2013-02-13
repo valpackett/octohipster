@@ -59,25 +59,24 @@
 (defcontroller contacts "/contacts"
   "Operations about contacts"
   (route "/" []
-    (->
-      (listing-resource "Operations with all contacts"
-        :schema contacts-schema
-        :presenter contact-presenter
-        :child-url-template "/contacts/{name}"
-        :children-key :contacts ; the key you set in :exists?
-        :exists? (fn [ctx] {:contacts (contacts-all)})
-        :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
+    (listing-resource "Operations with all contacts"
+      :schema contacts-schema
+      :presenter contact-presenter
+      :child-url-template "/contacts/{name}"
+      :children-key :contacts ; the key you set in :exists?
+      :exists? (fn [ctx] {:contacts (contacts-all)})
+      :count contacts-count
+      :default-per-page 5
+      :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
 
-        :doc {:get {:nickname "getContacts"
-                    :responseClass "Contact"
-                    :summary "Get all contacts"
-                    :notes "Paginated"
-                    :parameters []}
-              :post {:nickname "createContact"
-                     :summary "Create a contact"
-                     :parameters [body-param]}})
-      (wrap-pagination {:counter contacts-count
-                        :default-per-page 5})))
+      :doc {:get {:nickname "getContacts"
+                  :responseClass "Contact"
+                  :summary "Get all contacts"
+                  :notes "Paginated"
+                  :parameters []}
+            :post {:nickname "createContact"
+                   :summary "Create a contact"
+                   :parameters [body-param]}}))
 
   (route "/:name" [name]
     (resource "Operations with individual contacts"

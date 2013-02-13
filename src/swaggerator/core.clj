@@ -3,7 +3,7 @@
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator json host cors link validator handlers util]
+        [swaggerator json host cors link validator pagination handlers util]
         (inflections core)))
 
 (def ^:dynamic *url* (atom ""))
@@ -45,35 +45,38 @@
           (wrap-json-schema-validator ~schema)
           ; add links:
           (wrap-add-link-templates ~link-tpls)
-          wrap-add-self-link
-          ; consume links:
-          wrap-hal-json
-          wrap-link-header
-          ; independent:
-          wrap-host-bind
-          wrap-cors
-          wrap-json-params
-          wrap-keyword-params
-          wrap-nested-params
-          wrap-params)))
+          wrap-add-self-link)))
 
 (defmacro listing-resource [desc & kvs]
   (let [k (apply hash-map kvs)
         ckey (-> k :children-key)
         rel (or (-> k :child-rel)
                 (-> ckey name singular))]
-    `(resource ~desc
-               ~@kvs
-               :method-allowed? (request-method-in :get :head :post)
-               :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
-               :link-mapping {~ckey ~rel}
-               :handle-ok (default-list-handler (:presenter ~k) ~ckey)
-               :post-redirect? true
-               :see-other (params-rel ~rel))))
+    `(-> (resource ~desc
+                   ~@kvs
+                   :method-allowed? (request-method-in :get :head :post)
+                   :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
+                   :link-mapping {~ckey ~rel}
+                   :handle-ok (default-list-handler (:presenter ~k) ~ckey)
+                   :post-redirect? true
+                   :see-other (params-rel ~rel))
+         (wrap-pagination {:counter (:count ~k)
+                           :default-per-page (:default-per-page ~k)}))))
 
 (defmacro route [url binds & body]
   (swap! *url* (constantly url))
-  `(cmpj/ANY ~url ~binds ~@body))
+  `(cmpj/ANY ~url ~binds
+             (-> ~@body
+                 ; consume links:
+                 wrap-hal-json
+                 wrap-link-header
+                 ; independent:
+                 wrap-host-bind
+                 wrap-cors
+                 wrap-json-params
+                 wrap-keyword-params
+                 wrap-nested-params
+                 wrap-params)))
 
 (defmacro controller [url desc & body]
   (swap! *swagger-apis* (constantly []))
