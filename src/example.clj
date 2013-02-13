@@ -3,7 +3,7 @@
 (ns example
   (:use [compojure.core :only [defroutes]]
         [org.httpkit server]
-        [swaggerator core json pagination]
+        [swaggerator core json pagination link]
         [ring.middleware ratelimit])
   (:import [org.bson.types ObjectId])
   (:require [monger.core :as mg]
@@ -64,11 +64,12 @@
         :method-allowed? (request-method-in :get :head :post)
         :schema contacts-schema
         :available-media-types ["application/json"]
+        :link-templates [{:href "/contacts/{name}" :rel "contact"}]
 
         ; :data is the convention used by wrap-handler-json
         ; handlers (wrap-handler-*) are like ring middleware, except work with liberator contexts
         :exists? (fn [ctx] {:data (contacts-all)})
-        :handle-ok (-> contact-presenter list-handler wrap-handler-json)
+        :handle-ok (-> contact-presenter list-handler wrap-handler-json wrap-handler-link)
 
         :post-redirect? true
         :post-is-create? true
@@ -95,8 +96,9 @@
       :new? false
       :exists? (fn [ctx]
                  (when-let [e (contacts-find-by-name name)]
-                   {:data e}))
-      :handle-ok (-> contact-presenter entry-handler wrap-handler-json)
+                   {:data e
+                    :links [{:href "/contacts" :rel "list"}]}))
+      :handle-ok (-> contact-presenter entry-handler wrap-handler-json wrap-handler-link)
 
       :can-put-to-missing? false
       :put! (fn [ctx]

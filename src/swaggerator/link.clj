@@ -1,4 +1,5 @@
-(ns swaggerator.link)
+(ns swaggerator.link
+  (:use [swaggerator util]))
 
 (defn make-link-header-field [[k v]]
   (format "%s=\"%s\"" (name k) v))
@@ -20,11 +21,30 @@
          (interpose ", ")
          (apply str))))
 
-(defn wrap-link-header [handler]
+(defn- wrap-link-header-1 [handler k h]
   (fn [req]
     (let [rsp (-> req
-                  (assoc :links (or (:links req) []))
+                  (assoc k (or (k req) []))
                   handler)]
       (-> rsp
-          (assoc-in [:headers "Link"] (-> rsp :links make-link-header))
-          (dissoc :links)))))
+          (assoc-in [:headers h] (-> rsp k make-link-header))
+          (dissoc k)))))
+
+(defn wrap-link-header [handler]
+  (-> handler
+      (wrap-link-header-1 :links "Link")
+      (wrap-link-header-1 :link-templates "Link-Template")))
+
+(defn wrap-add-link-templates [handler tpls]
+  (fn [req]
+    (let [rsp (handler req)]
+      (assoc rsp :link-templates
+             (concatv (or (:link-templates rsp) []) tpls)))))
+
+(defn wrap-handler-link [handler]
+  (fn [ctx]
+    (let [result (handler ctx)]
+      (if (map? result)
+        (assoc result :links (:links ctx))
+        {:body result
+         :links (:links ctx)}))))

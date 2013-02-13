@@ -31,6 +31,7 @@
 
 (defmacro resource [desc & kvs]
   (let [k (apply hash-map kvs)
+        link-tpls (-> k :link-templates eval)
         schema (-> k :schema eval)]
     (swap! *swagger-apis* conj
       {:path (-> @*url* eval swaggerify-url-template)
@@ -38,6 +39,7 @@
        :operations (-> k :doc eval resource->operations)})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
      `(-> (lib/resource ~@kvs)
+          (wrap-add-link-templates ~link-tpls)
           (wrap-json-schema-validator ~schema))))
 
 (defmacro route [url binds & body]
