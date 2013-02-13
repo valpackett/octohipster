@@ -64,6 +64,7 @@
         :method-allowed? (request-method-in :get :head :post)
         :schema contacts-schema
         :link-templates [{:href "/contacts/{name}" :rel "contact"}]
+        :link-mapping {:contacts "contact"} ; maps context keys to link-templates rels
 
         ; handlers are like ring middleware, except work with liberator contexts
         :exists? (fn [ctx] {:contacts (contacts-all)})

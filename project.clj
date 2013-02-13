@@ -8,7 +8,8 @@
                  [compojure "1.1.5"]
                  [liberator "0.8.0"]
                  [cheshire "5.0.1"]
-                 [com.github.fge/json-schema-validator "1.99.3"]]
+                 [com.github.fge/json-schema-validator "1.99.3"]
+                 [com.damnhandy/handy-uri-templates "1.1.7"]]
   :profiles {:1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}
              :dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
                                   [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]

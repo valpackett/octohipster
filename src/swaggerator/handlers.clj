@@ -1,5 +1,6 @@
 (ns swaggerator.handlers
-  (:use [swaggerator json link util]))
+  (:use [swaggerator json link util])
+  (:import [com.damnhandy.uri.template UriTemplate]))
 
 (def ^:dynamic *handled-content-types* (atom []))
 
@@ -20,14 +21,27 @@
       (map (fn [x] [(:rel x) (-> x (dissoc :rel))]) (:links rsp))
       (map (fn [x] [(:rel x) (-> x (dissoc :rel) (assoc :templated true))]) (:link-templates rsp)))))
 
+(defn add-self-hal-link [ctx dk x]
+  (let [lm (or ((-> ctx :resource :link-mapping)) {})
+        rel (dk lm)
+        tpl (UriTemplate/fromTemplate (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
+                                          first
+                                          :href)) ]
+    (doseq [[k v] x]
+      (.set tpl (name k) v))
+    (-> x
+        (assoc :_links {:self {:href (.expand tpl)}}))))
+
 (defn wrap-handler-hal-json [handler]
   (swap! *handled-content-types* conj "application/hal+json")
   (fn [ctx]
     (case (-> ctx :representation :media-type)
       "application/hal+json" (let [result (-> ctx handler)
-                                   k (:data-key result)
-                                   result (k result)
-                                   result (if (map? result) result {:_embedded {k result}})]
+                                   dk (:data-key result)
+                                   result (dk result)
+                                   result (if (map? result)
+                                            result
+                                            {:_embedded {dk (map (partial add-self-hal-link ctx dk) result)}})]
                                {:_hal result})
       (handler ctx))))
 
