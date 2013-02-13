@@ -3,7 +3,7 @@
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator json host cors validator util]))
+        [swaggerator json host cors link validator util]))
 
 (def ^:dynamic *swagger-version* "1.1")
 (def ^:dynamic *swagger-apis* (atom []))
@@ -55,6 +55,7 @@
        (-> (cmpj/routes ~@body)
            wrap-host-bind
            wrap-cors
+           wrap-link-header
            wrap-json-params
            wrap-keyword-params
            wrap-nested-params
