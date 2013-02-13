@@ -40,3 +40,12 @@
     (let [rsp (handler req)]
       (assoc rsp :link-templates
              (concatv (or (:link-templates rsp) []) tpls)))))
+
+(defn wrap-add-self-link [handler]
+  (fn [req]
+    (let [rsp (handler req)]
+      (assoc rsp :links
+             (concatv (or (:links rsp) [])
+                      [{:href (str (:uri req) (if-let [qs (:query-string req)]
+                                                (str "?" qs) ""))
+                        :rel "self"}])))))

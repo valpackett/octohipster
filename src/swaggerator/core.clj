@@ -41,8 +41,20 @@
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
      `(-> (lib/resource ~@kvs
                         :available-media-types @*handled-content-types*)
+          (wrap-json-schema-validator ~schema)
+          ; add links:
           (wrap-add-link-templates ~link-tpls)
-          (wrap-json-schema-validator ~schema))))
+          wrap-add-self-link
+          ; consume links:
+          wrap-hal-json
+          wrap-link-header
+          ; independent:
+          wrap-host-bind
+          wrap-cors
+          wrap-json-params
+          wrap-keyword-params
+          wrap-nested-params
+          wrap-params)))
 
 (defmacro route [url binds & body]
   (swap! *url* (constantly url))
@@ -52,14 +64,7 @@
   (swap! *swagger-apis* (constantly []))
   (swap! *swagger-schemas* (constantly {}))
   `(with-meta
-     (-> (cmpj/routes ~@body)
-         wrap-host-bind
-         wrap-cors
-         wrap-link-header
-         wrap-json-params
-         wrap-keyword-params
-         wrap-nested-params
-         wrap-params)
+     (cmpj/routes ~@body)
      {:resourcePath ~url
       :description ~desc
       :apis (map #(assoc % :path (str ~url (:path %))) @*swagger-apis*)
