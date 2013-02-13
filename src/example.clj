@@ -65,10 +65,9 @@
         :schema contacts-schema
         :link-templates [{:href "/contacts/{name}" :rel "contact"}]
 
-        ; :data is the convention used by wrap-handler-json
         ; handlers are like ring middleware, except work with liberator contexts
-        :exists? (fn [ctx] {:data (contacts-all)})
-        :handle-ok (-> contact-presenter default-list-handler)
+        :exists? (fn [ctx] {:contacts (contacts-all)})
+        :handle-ok (default-list-handler contact-presenter :contacts)
 
         :post-redirect? true
         :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
@@ -93,19 +92,19 @@
       :new? false
       :exists? (fn [ctx]
                  (when-let [e (contacts-find-by-name name)]
-                   {:data e
+                   {:contact e
                     :links [{:href "/contacts" :rel "list"}]}))
-      :handle-ok (-> contact-presenter default-entry-handler)
+      :handle-ok (default-entry-handler contact-presenter :contact)
 
       :can-put-to-missing? false
       :put! (fn [ctx]
-              {:data (-> ctx :request :params
-                         (contacts-update! (:data ctx))
+              {:contact (-> ctx :request :params
+                         (contacts-update! (:contact ctx))
                          :name contacts-find-by-name)})
 
       :delete! (fn [ctx]
-                 (contacts-delete! (:data ctx))
-                 {:data nil})
+                 (contacts-delete! (:contact ctx))
+                 {:contact nil})
 
       :doc {:get {:nickname "getContact"
                   :responseClass "Contact"

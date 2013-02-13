@@ -3,14 +3,14 @@
 
 (def ^:dynamic *handled-content-types* (atom []))
 
-(defn wrap-handler-json
-  ([handler] (wrap-handler-json handler :data))
-  ([handler k]
-    (swap! *handled-content-types* conj "application/json")
-    (fn [ctx]
-      (case (-> ctx :representation :media-type)
-        "application/json" (-> ctx handler k jsonify)
-        (handler ctx)))))
+(defn wrap-handler-json [handler]
+  (swap! *handled-content-types* conj "application/json")
+  (fn [ctx]
+    (case (-> ctx :representation :media-type)
+      "application/json" (let [result (handler ctx)
+                               k (:data-key result)]
+                           (-> result k jsonify))
+      (handler ctx))))
 
 ; hal is implemented through a ring middleware
 ; because it needs to capture links that are not from liberator
@@ -20,16 +20,16 @@
       (map (fn [x] [(:rel x) (-> x (dissoc :rel))]) (:links rsp))
       (map (fn [x] [(:rel x) (-> x (dissoc :rel) (assoc :templated true))]) (:link-templates rsp)))))
 
-(defn wrap-handler-hal-json
-  ([handler] (wrap-handler-hal-json handler :data))
-  ([handler k]
-    (swap! *handled-content-types* conj "application/hal+json")
-    (fn [ctx]
-      (case (-> ctx :representation :media-type)
-        "application/hal+json" (let [result (-> ctx handler k)
-                                     result (if (map? result) result {:_embedded {k result}})]
-                                 {:_hal result})
-        (handler ctx)))))
+(defn wrap-handler-hal-json [handler]
+  (swap! *handled-content-types* conj "application/hal+json")
+  (fn [ctx]
+    (case (-> ctx :representation :media-type)
+      "application/hal+json" (let [result (-> ctx handler)
+                                   k (:data-key result)
+                                   result (k result)
+                                   result (if (map? result) result {:_embedded {k result}})]
+                               {:_hal result})
+      (handler ctx))))
 
 (defn wrap-hal-json [handler]
   (fn [req]
@@ -68,7 +68,9 @@
   ([presenter] (list-handler presenter :data))
   ([presenter k]
    (fn [ctx]
-     (assoc ctx k (mapv presenter (k ctx))))))
+     (-> ctx
+         (assoc :data-key k)
+         (assoc k (mapv presenter (k ctx)))))))
 
 (defn default-list-handler
   ([presenter] (default-list-handler presenter :data))
@@ -79,7 +81,9 @@
   ([presenter] (entry-handler presenter :data))
   ([presenter k]
    (fn [ctx]
-     (assoc ctx k (presenter (k ctx))))))
+     (-> ctx
+         (assoc :data-key k)
+         (assoc k (presenter (k ctx)))))))
 
 (defn default-entry-handler
   ([presenter] (default-entry-handler presenter :data))
