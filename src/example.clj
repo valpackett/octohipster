@@ -60,19 +60,13 @@
   "Operations about contacts"
   (route "/" []
     (->
-      (resource "Operations with all contacts"
-        :method-allowed? (request-method-in :get :head :post)
+      (listing-resource "Operations with all contacts"
         :schema contacts-schema
-        :link-templates [{:href "/contacts/{name}" :rel "contact"}]
-        :link-mapping {:contacts "contact"} ; maps context keys to link-templates rels
-
-        ; handlers are like ring middleware, except work with liberator contexts
+        :presenter contact-presenter
+        :child-url-template "/contacts/{name}"
+        :children-key :contacts ; the key you set in :exists?
         :exists? (fn [ctx] {:contacts (contacts-all)})
-        :handle-ok (default-list-handler contact-presenter :contacts)
-
-        :post-redirect? true
         :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
-        :see-other (params-rel "contact")
 
         :doc {:get {:nickname "getContacts"
                     :responseClass "Contact"
