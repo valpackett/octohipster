@@ -34,3 +34,9 @@
 (defn set-to-uri-template! [tpl x]
   (doseq [[k v] x]
     (.set tpl (name k) v)))
+
+(defn full-uri [req]
+  (str (:uri req)
+       (if-let [qs (:query-string req)]
+         (str "?" qs)
+         "")))

@@ -46,6 +46,5 @@
     (let [rsp (handler req)]
       (assoc rsp :links
              (concatv (or (:links rsp) [])
-                      [{:href (str (:uri req) (if-let [qs (:query-string req)]
-                                                (str "?" qs) ""))
+                      [{:href (full-uri req)
                         :rel "self"}])))))

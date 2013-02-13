@@ -125,6 +125,29 @@
         wrap-host-bind
         wrap-cors)))
 
+(defn make-schema [xs]
+  (apply merge (map (comp :models meta) xs)))
+
+(defn schema-route [& xs]
+  (cmpj/GET "/schema" []
+    (serve-hal-json (make-schema xs))))
+
+(defn root-route [& xs]
+  (cmpj/GET "/" []
+    (serve-hal-json
+      {:_links (into {}
+                     (mapv (fn [x] [(-> x meta :resourcePath (string/replace "/" "")) ; FIXME: use var name somehow
+                                    {:href  (-> x meta :resourcePath)
+                                     :title (-> x meta :description)}]) xs))
+       :_embedded {:schema (assoc (make-schema xs) :_links {:self {:href "/schema"}})}})))
+
+(defmacro defroutes [n & xs]
+  `(cmpj/defroutes ~n
+     ~@(mapv (fn [x] `(nest ~x)) xs) ; call nest for every x in xs
+     (swagger-routes ~@xs)
+     (schema-route ~@xs)
+     (root-route ~@xs)))
+
 (defn params-rel [rel]
   (fn [ctx]
     (let [tpl (uri-template-for-rel ctx rel)]

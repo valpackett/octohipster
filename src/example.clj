@@ -1,8 +1,7 @@
 ;;;; Swaggerator REST API example
 ;;;; Has validation, pagination, rate limiting, Swagger documentation
 (ns example
-  (:use [compojure.core :only [defroutes]]
-        [org.httpkit server]
+  (:use [org.httpkit server]
         [swaggerator core pagination handlers]
         [ring.middleware ratelimit])
   (:import [org.bson.types ObjectId])
@@ -109,8 +108,7 @@
 
 ;; Routes
 (defroutes app-routes
-  (nest contacts)
-  (swagger-routes contacts))
+  contacts)
 
 (def app
   (-> app-routes

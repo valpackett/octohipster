@@ -1,5 +1,6 @@
 (ns swaggerator.json
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json])
+  (:use [swaggerator util]))
 
 ; thanks: https://github.com/mmcgrana/ring-json-params/blob/master/src/ring/middleware/json_params.clj
 
@@ -26,3 +27,11 @@
     {:status 200
      :headers {"Content-Type" "application/json"}
      :body (jsonify x)}))
+
+(defn serve-hal-json [x]
+  (fn [req]
+    {:status 200
+     :headers {"Content-Type" "application/hal+json"}
+     :body (-> x
+               (assoc :_links (assoc (or (:_links x) {}) :self {:href (full-uri req)}))
+               jsonify)}))
