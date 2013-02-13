@@ -11,7 +11,7 @@ Includes:
 
 ## Usage
 
-See src/example.clj
+See src/example.clj; run with `lein run -m example`
 
 ## License
 
