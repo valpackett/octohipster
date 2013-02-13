@@ -53,15 +53,25 @@
         rel (or (-> k :child-rel)
                 (-> ckey name singular))]
     `(-> (resource ~desc
-                   ~@kvs
                    :method-allowed? (request-method-in :get :head :post)
                    :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
                    :link-mapping {~ckey ~rel}
                    :handle-ok (default-list-handler (:presenter ~k) ~ckey)
                    :post-redirect? true
-                   :see-other (params-rel ~rel))
+                   :see-other (params-rel ~rel)
+                   ~@kvs)
          (wrap-pagination {:counter (:count ~k)
                            :default-per-page (:default-per-page ~k)}))))
+
+(defmacro entry-resource [desc & kvs]
+  (let [k (apply hash-map kvs)]
+    `(resource ~desc
+               :method-allowed? (request-method-in :get :head :put :delete)
+               :respond-with-entity? true
+               :new? false
+               :can-put-to-missing? false
+               :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))
+               ~@kvs)))
 
 (defmacro route [url binds & body]
   (swap! *url* (constantly url))

@@ -79,27 +79,21 @@
                    :parameters [body-param]}}))
 
   (route "/:name" [name]
-    (resource "Operations with individual contacts"
-      :method-allowed? (request-method-in :get :head :put :delete)
+    (entry-resource "Operations with individual contacts"
       :schema contacts-schema
-      :respond-with-entity? true
-      :new? false
       :exists? (fn [ctx]
                  (when-let [e (contacts-find-by-name name)]
                    {:contact e
-                    :links [{:href "/contacts" :rel "list"}]}))
-      :handle-ok (default-entry-handler contact-presenter :contact)
-
-      :can-put-to-missing? false
+                    :links [{:href "/contacts" :rel "listing"}]}))
+      :presenter contact-presenter
+      :data-key :contact
       :put! (fn [ctx]
               {:contact (-> ctx :request :params
                          (contacts-update! (:contact ctx))
                          :name contacts-find-by-name)})
-
       :delete! (fn [ctx]
                  (contacts-delete! (:contact ctx))
                  {:contact nil})
-
       :doc {:get {:nickname "getContact"
                   :responseClass "Contact"
                   :summary "Get the contact"
