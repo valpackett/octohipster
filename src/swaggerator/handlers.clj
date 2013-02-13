@@ -23,8 +23,7 @@
 (defn add-self-hal-link [ctx dk x]
   (let [lm (or ((-> ctx :resource :link-mapping)) {})
         tpl (uri-template-for-rel ctx (dk lm))]
-    (doseq [[k v] x]
-      (.set tpl (name k) v))
+    (set-to-uri-template! tpl x)
     (-> x
         (assoc :_links {:self {:href (.expand tpl)}}))))
 

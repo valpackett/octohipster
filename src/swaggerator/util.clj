@@ -30,3 +30,7 @@
     (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
         first
         :href)))
+
+(defn set-to-uri-template! [tpl x]
+  (doseq [[k v] x]
+    (.set tpl (name k) v)))
