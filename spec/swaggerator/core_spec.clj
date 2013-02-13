@@ -12,19 +12,20 @@
 
 (defcontroller things "/things"
   "Operations about things"
-  (resource "/:name" [name] "Operations with individual things"
-    :method-allowed? (request-method-in :get :put :head)
-    :schema thing-schema
-    :doc {:get {:nickname "getThing"
-                :responseClass "Thing"
-                :summary "Get the thing"
-                :notes "Notes"
-                :parameters [{:name "name"
-                              :description "Name"
-                              :dataType "string"
-                              :required true
-                              :paramType "path"}]}}
-    :handle-ok (fn [ctx] (str "Name: " name))))
+  (route "/:name" [name]
+    (resource "Operations with individual things"
+      :method-allowed? (request-method-in :get :put :head)
+      :schema thing-schema
+      :doc {:get {:nickname "getThing"
+                  :responseClass "Thing"
+                  :summary "Get the thing"
+                  :notes "Notes"
+                  :parameters [{:name "name"
+                                :description "Name"
+                                :dataType "string"
+                                :required true
+                                :paramType "path"}]}}
+      :handle-ok (fn [ctx] (str "Name: " name)))))
 
 (defroutes app-routes
   (nest things)
