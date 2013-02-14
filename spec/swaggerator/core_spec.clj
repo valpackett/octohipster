@@ -27,8 +27,7 @@
       :handle-ok (fn [ctx] (str "Name: " name)))))
 
 (defroutes app-routes
-  (nest things)
-  (swagger-routes things))
+  things)
 
 (describe "swaggerator"
   (it "nests controllers"
@@ -78,4 +77,18 @@
                 (content-type "application/json")
                 (body (json/generate-string {:name "str"}))
                 app-routes)]
-      (should= 201 (:status x)))))
+      (should= 201 (:status x))))
+          
+  (it "outputs the schema for hal"
+    (let [x (-> (request :get "/schema")
+                (content-type "application/hal+json")
+                app-routes :body (json/parse-string true))]
+      (should= (keys x) [:_links :Thing])))
+
+  (it "outputs the root for hal"
+    (let [x (-> (request :get "/")
+                (content-type "application/hal+json")
+                app-routes :body (json/parse-string true))]
+      (should= (:_links x) {:self {:href "/"}
+                            :things {:href "/things" :title "Operations about things"}})
+      (should= (-> x :_embedded :schema keys) [:_links :Thing]))))
