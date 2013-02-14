@@ -7,7 +7,13 @@
 
   Handlers are functions that produce Ring responses from
   Liberator contexts. You pass handlers to resource parameters,
-  usually :handle-ok."
+  usually :handle-ok.
+  
+  Handlers are composed like Ring middleware, but
+  THEY ARE NOT RING MIDDLEWARE. They take a Liberator
+  context as an argument, not a Ring request.
+  When you create your own, follow the naming convention:
+  wrap-handler-*, not wrap-*."
   (:use [swaggerator json link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))

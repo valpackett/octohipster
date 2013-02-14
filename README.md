@@ -4,20 +4,20 @@ Current [semantic](http://semver.org/) version:
 [swaggerator "0.1.0-SNAPSHOT"]
 ```
 
-# swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png)](https://travis-ci.org/myfreeweb/swaggerator)
+# swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png?branch=master)](https://travis-ci.org/myfreeweb/swaggerator)
 
 A REST framework for Clojure that allows you to easily build high performance web APIs that:
 
 - support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
 - have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation
-- use JSON Schema for validation *and* documentation
+- use [JSON Schema](http://json-schema.org) for validation *and* documentation
 - have pagination
-- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit) and [authentication](https://github.com/cemerick/friend) and [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) with just middleware
+- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware
 
 ## Usage
 
-For an example, see src/example.clj; run with `lein run -m example`.
-Also, [API Documentation](http://myfreeweb.github.com/swaggerator) is available.
+- For an example, see [src/example.clj](https://github.com/myfreeweb/swaggerator/blob/master/src/example.clj); run with `lein run -m example`
+- [API Documentation](http://myfreeweb.github.com/swaggerator) is available
 
 ## License
 
