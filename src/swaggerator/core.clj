@@ -159,7 +159,7 @@
     (-> x make-schema first val serve-json-schema)))
 
 (defn all-schemas-route [& xs]
-  (cmpj/GET "/schema" []
+  (cmpj/GET "/all.schema" []
     (serve-hal-json (merge-schema xs))))
 
 (defn root-route [& xs]
@@ -169,7 +169,7 @@
                      (mapv (fn [x] [(-> x meta :name)
                                     {:href  (-> x meta :resourcePath)
                                      :title (-> x meta :description)}]) xs))
-       :_embedded {:schema (assoc (merge-schema xs) :_links {:self {:href "/schema"}})}})))
+       :_embedded {:schema (assoc (merge-schema xs) :_links {:self {:href "/all.schema"}})}})))
 
 (defmacro defroutes
   "Defines a Ring handler for specified controllers that routes

@@ -95,7 +95,7 @@
       (should= (-> x :headers (get "Link")) "</things/something>; rel=\"self\", </things.schema#>; rel=\"describedBy\"")))
 
   (it "outputs the schema for hal"
-    (let [x (-> (request :get "/schema")
+    (let [x (-> (request :get "/all.schema")
                 (content-type "application/hal+json")
                 app-routes :body (json/parse-string true))]
       (should= (keys x) [:_links :Thing])))
