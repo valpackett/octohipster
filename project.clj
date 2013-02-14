@@ -18,6 +18,7 @@
                                   [ring-ratelimit "0.1.0"         :exclusions [org.clojure/clojure]]
                                   [ring-mock "0.1.3"              :exclusions [org.clojure/clojure]]]}}
   :plugins [[speclj "2.5.0"]
+            [codox "0.6.4"]
             [lein-release "1.0.0"]]
   :aliases {"all" ["with-profile" "dev:dev,1.5"]}
   :bootclasspath true
@@ -26,4 +27,7 @@
                  ["releases"  {:url "https://clojars.org/repo" :creds :gpg}]]
   :warn-on-reflection true
   :jar-exclusions [#"example.clj"]
+  :codox {:exclude example
+          :src-dir-uri "https://github.com/myfreeweb/swaggerator/blob/master"
+          :src-linenum-anchor-prefix "L"}
   :test-paths ["spec/"])

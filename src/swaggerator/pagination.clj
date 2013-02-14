@@ -1,8 +1,10 @@
 (ns swaggerator.pagination
   (:use [swaggerator util]))
 
-(def ^:dynamic *skip* 0)
-(def ^:dynamic *limit* 0)
+(def ^:dynamic *skip*
+  "Skip parameter for database queries" 0)
+(def ^:dynamic *limit*
+  "Limit parameter for database queries" 0)
 
 (defn wrap-pagination
   "Ring middleware that calculates skip and limit database parameters based on

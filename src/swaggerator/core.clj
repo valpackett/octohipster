@@ -11,11 +11,16 @@
 (def ^:dynamic *swagger-apis* (atom []))
 (def ^:dynamic *swagger-schemas* (atom {}))
 (def ^:dynamic *global-error-responses*
+  "Collection of Swagger documentation of error responses
+  that is added for every resource."
   [{:code 422
     :reason "The data did not pass schema validation"}
    {:code 404
     :reason "Resource not found"}])
-(def ^:dynamic *global-parameters* [])
+(def ^:dynamic *global-parameters*
+  "Collection of Swagger documentation of parameters
+  that is added for every resource."
+  [])
 
 (def request-method-in lib/request-method-in)
 

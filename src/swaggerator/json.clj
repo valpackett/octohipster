@@ -9,13 +9,16 @@
   (if-let [#^String type (:content-type req)]
     (not (empty? (re-find #"^application/(vnd.+)?json" type)))))
  
-(defn wrap-json-params [handler]
+(defn wrap-json-params
+  "Ring middleware that parses JSON, updates :params and
+  :non-query-params with received data."
+  [handler]
   (fn [req]
     (if-let [body (and (json-request? req) (:body req))]
       (let [bstr (slurp body)
             json-params (json/parse-string bstr true)
             req* (assoc req
-                   :json-params json-params
+                   :non-query-params (merge (or (:non-query-params req) {}) json-params)
                    :params (merge (:params req) json-params))]
         (handler req*))
       (handler req))))

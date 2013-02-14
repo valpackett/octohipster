@@ -7,8 +7,6 @@
   (:require [cheshire.core :as json]
             [cheshire.factory :as factory]))
 
-(set! *warn-on-reflection* true)
-
 (def mapper (ObjectMapper.))
 
 (defn ^JsonNode clojure->jsonnode [x]
@@ -27,11 +25,14 @@
         (.writeTree ^ObjectMapper mapper jgen root)
         (.toString sw)))))
 
-(defn wrap-json-schema-validator [handler schema]
+(defn wrap-json-schema-validator
+  "Ring middleware that validates any POST/PUT requests
+  (:non-query-params) against a given JSON Schema."
+  [handler schema]
   (let [v (make-validator schema)]
     (fn [req]
       (if (#{:post :put :patch} (-> req :request-method))
-        (let [results (-> req :json-params v)]
+        (let [results (-> req :non-query-params v)]
           (if (= results "{}")
             (handler req)
             {:status 422
