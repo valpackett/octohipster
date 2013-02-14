@@ -3,7 +3,9 @@
 
 (def ^:dynamic *handled-content-types* (atom []))
 
-(defn wrap-handler-json [handler]
+(defn wrap-handler-json
+  "Wraps a handler with a JSON handler."
+  [handler]
   (swap! *handled-content-types* conj "application/json")
   (fn [ctx]
     (case (-> ctx :representation :media-type)
@@ -27,7 +29,10 @@
     (-> x
         (assoc :_links {:self {:href href}}))))
 
-(defn wrap-handler-hal-json [handler]
+(defn wrap-handler-hal-json
+  "Wraps handler with a HAL+JSON handler. Note: consumes links;
+  requires wrapping the Ring handler with swaggerator.handlers/wrap-hal-json."
+  [handler]
   (swap! *handled-content-types* conj "application/hal+json")
   (fn [ctx]
     (case (-> ctx :representation :media-type)
@@ -40,7 +45,9 @@
                                {:_hal result})
       (handler ctx))))
 
-(defn wrap-hal-json [handler]
+(defn wrap-hal-json
+  "Ring middleware for supporting the HAL+JSON handler wrapper."
+  [handler]
   (fn [req]
     (let [rsp (handler req)]
       (if-let [hal (:_hal rsp)]
@@ -55,7 +62,11 @@
         rsp))))
 ; /hal
 
-(defn wrap-handler-link [handler]
+(defn wrap-handler-link
+  "Wraps a handler with a function that passes :links and :link-templates
+  to the response for consumption by swaggerator.handlers/wrap-hal-json,
+  swaggerator.link/wrap-link-header or any other middleware."
+  [handler]
   (fn [ctx]
     (let [result (handler ctx)]
       (if (map? result)
@@ -66,7 +77,9 @@
          :links (:links ctx)
          :link-templates (:link-templates ctx)}))))
 
-(defn wrap-default-handler [handler]
+(defn wrap-default-handler
+  "Wraps a handler with wrap-handler-hal-json, wrap-handler-json and wrap-handler-link."
+  [handler]
   (-> handler
       wrap-handler-hal-json
       wrap-handler-json
@@ -74,6 +87,8 @@
       ))
 
 (defn list-handler
+  "Makes a handler that maps a presenter over data that is retrieved
+  from the Liberator context by given data key (by default :data)."
   ([presenter] (list-handler presenter :data))
   ([presenter k]
    (fn [ctx]
@@ -82,11 +97,14 @@
          (assoc k (mapv presenter (k ctx)))))))
 
 (defn default-list-handler
+  "list-handler wrapped in wrap-default-handler."
   ([presenter] (default-list-handler presenter :data))
   ([presenter k] (-> (list-handler presenter k)
                      wrap-default-handler)))
 
 (defn entry-handler
+  "Makes a handler that applies a presenter to data that is retrieved
+  from the Liberator context by given data key (by default :data)."
   ([presenter] (entry-handler presenter :data))
   ([presenter k]
    (fn [ctx]
@@ -95,6 +113,7 @@
          (assoc k (presenter (k ctx)))))))
 
 (defn default-entry-handler
+  "entry-handler wrapped in wrap-default-handler."
   ([presenter] (default-entry-handler presenter :data))
   ([presenter k] (-> (entry-handler presenter k)
                      wrap-default-handler)))

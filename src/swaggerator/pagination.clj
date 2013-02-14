@@ -4,8 +4,14 @@
 (def ^:dynamic *skip* 0)
 (def ^:dynamic *limit* 0)
 
-(defn wrap-pagination [handler {counter :counter
-                                default-pp :default-per-page}]
+(defn wrap-pagination
+  "Ring middleware that calculates skip and limit database parameters based on
+  a counter function and request parameters, sets *skip* and *limit* to these values,
+  adds first/prev/next/last links to the :links parameter in the response (for
+  swaggerator.link/wrap-link-header, swaggerator.handlers/wrap-hal-json
+  or any other middleware that consument :links)."
+  [handler {counter :counter
+            default-pp :default-per-page}]
   (fn [req]
     (let [page (if-let [pparam (get-in req [:query-params "page"])]
                  (Integer/parseInt pparam)

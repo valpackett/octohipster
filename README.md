@@ -1,3 +1,9 @@
+Current [semantic](http://semver.org/) version:
+
+```clojure
+[swaggerator "0.1.0-SNAPSHOT"]
+```
+
 # swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png)](https://travis-ci.org/myfreeweb/swaggerator)
 
 A REST framework for Clojure that allows you to easily build high performance web APIs that:

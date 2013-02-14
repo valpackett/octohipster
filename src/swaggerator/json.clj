@@ -25,13 +25,13 @@
 (defn serve-json [x]
   (fn [req]
     {:status 200
-     :headers {"Content-Type" "application/json"}
+     :headers {"Content-Type" "application/json;charset=UTF-8"}
      :body (jsonify x)}))
 
 (defn serve-hal-json [x]
   (fn [req]
     {:status 200
-     :headers {"Content-Type" "application/hal+json"}
+     :headers {"Content-Type" "application/hal+json;charset=UTF-8"}
      :body (-> x
                (assoc :_links (assoc (or (:_links x) {}) :self {:href (full-uri req)}))
                jsonify)}))

@@ -5,12 +5,8 @@
 
 (defn concatv [& xs] (into [] (apply concat xs)))
 
-(defn clout->uri-template [x]
-  (string/replace x #":([^/]+)" "{$1}"))
-
 (defmacro map-to-querystring
-  "Turns a map into a query sting, eg.
-  {:abc 123 :def ' '} -> ?abc=123&def=+"
+  "Turns a map into a query sting, eg. {:abc 123 :def ' '} -> ?abc=123&def=+."
   [m]
   `(if (empty? ~m) ""
      (->> ~m
@@ -31,19 +27,29 @@
       first
       :href))
 
-(defn expand-uri-template [tpl x]
+(defn clout->uri-template
+  "Turns a Clout route into an RFC 6570 URI Template, eg. /things/:name -> /things/{name}"
+  [x] (string/replace x #":([^/]+)" "{$1}"))
+
+(defn expand-uri-template
+  "Expands an RFC 6570 URI Template with a map of arguments."
+  [tpl x]
   (let [tpl (UriTemplate/fromTemplate tpl)]
     (doseq [[k v] x]
       (.set tpl (name k) v))
     (.expand tpl)))
 
-(defn full-uri [req]
+(defn full-uri
+  "Returns the full relative URI of a Ring request (ie. includes the query string)."
+  [req]
   (str (:uri req)
        (if-let [qs (:query-string req)]
          (str "?" qs)
          "")))
 
-(defn wrap-handle-options-and-head [handler]
+(defn wrap-handle-options-and-head
+  "Ring middleware that takes care of OPTIONS and HEAD requests."
+  [handler]
   (fn [req]
     (case (:request-method req)
       (:head :options) (-> req
@@ -52,10 +58,13 @@
                            (assoc :body nil))
       (handler req))))
 
-(defn wrap-cors [handler]
+(defn wrap-cors
+  "Ring middleware that adds CORS headers."
+  [handler]
   (fn [req]
     (let [rsp (handler req)]
-      (assoc rsp :headers (merge (-> rsp :headers)
-                                 {"Access-Control-Allow-Origin" "*"
-                                  "Access-Control-Allow-Headers" "Accept, Authorization, Content-Type"
-                                  "Access-Control-Allow-Methods" "GET, POST, DELETE, PUT"})))))
+      (assoc rsp :headers
+             (merge (-> rsp :headers)
+                    {"Access-Control-Allow-Origin" "*"
+                     "Access-Control-Allow-Headers" "Accept, Authorization, Content-Type"
+                     "Access-Control-Allow-Methods" "GET, HEAD, POST, DELETE, PUT"})))))

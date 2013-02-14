@@ -30,7 +30,10 @@
                                              *global-error-responses*))))
         (keys doc)))
 
-(defmacro resource [desc & kvs]
+(defmacro resource
+  "Returns a Resource with specified description and parameters,
+  stores its documentation data in a secret place for later consumption by swaggerator.core/controller"
+  [desc & kvs]
   (let [k (apply hash-map kvs)
         link-tpls (-> k :link-templates eval)
         schema (-> k :schema eval)]
@@ -75,7 +78,9 @@
                :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))
                ~@kvs)))
 
-(defmacro route [url binds & body]
+(defmacro route
+  "Returns a route for a resource, wrapped with all middleware a resource needs"
+  [url binds & body]
   (swap! *url* (constantly url))
   `(cmpj/ANY ~url ~binds
              (-> ~@body
@@ -90,7 +95,9 @@
                  wrap-nested-params
                  wrap-params)))
 
-(defmacro controller [n url desc & body]
+(defmacro controller
+  "Returns a controller - a set of routes with documentation metadata about included resources"
+  [n url desc & body]
   (swap! *swagger-apis* (constantly []))
   (swap! *swagger-schemas* (constantly {}))
   `(with-meta
@@ -101,7 +108,9 @@
       :apis (map #(assoc % :path (str ~url (:path %))) @*swagger-apis*)
       :models @*swagger-schemas*}))
 
-(defmacro defcontroller [n url desc & body]
+(defmacro defcontroller
+  "Defines a controller, see swaggerator.core/controller"
+  [n url desc & body]
   (let [nn (keyword n)]
     `(def ~n (controller ~nn ~url ~desc ~@body))))
 
@@ -129,7 +138,7 @@
         wrap-host-bind
         wrap-cors)))
 
-(defn make-schema [xs]
+(defn- make-schema [xs]
   (apply merge (map (comp :models meta) xs)))
 
 (defn schema-route [& xs]
@@ -145,14 +154,20 @@
                                      :title (-> x meta :description)}]) xs))
        :_embedded {:schema (assoc (make-schema xs) :_links {:self {:href "/schema"}})}})))
 
-(defmacro defroutes [n & xs]
+(defmacro defroutes
+  "Defines a Ring handler for specified controllers that routes
+  to the controllers and metadata resources (Swagger docs, HAL root and schema)"
+  [n & xs]
   `(cmpj/defroutes ~n
      ~@(mapv (fn [x] `(nest ~x)) xs) ; call nest for every x in xs
      (swagger-routes ~@xs)
      (schema-route ~@xs)
      (root-route ~@xs)))
 
-(defn params-rel [rel]
+(defn params-rel
+  "Returns a function that expands a URI Template for a specified rel with request params,
+  suitable for use as the :see-other parameter in a resource."
+  [rel]
   (fn [ctx]
     (let [tpl (uri-template-for-rel ctx rel)]
       (expand-uri-template tpl (-> ctx :request :params)))))
