@@ -108,7 +108,7 @@
 
 ;; Routes
 (defroutes app-routes
-  contacts)
+  [contacts])
 
 (def app
   (-> app-routes

@@ -35,7 +35,7 @@
       :default-per-page 4)))
 
 (defroutes app-routes
-  things)
+  [things])
 
 (describe "swaggerator"
   (it "nests controllers"

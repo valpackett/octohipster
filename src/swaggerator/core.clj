@@ -173,14 +173,15 @@
 
 (defmacro defroutes
   "Defines a Ring handler for specified controllers that routes
-  to the controllers and metadata resources (Swagger docs, HAL root and schema)"
-  [n & xs]
+  to the controllers and metadata resources (Swagger docs, HAL root and schema)."
+  [n controllers & body]
   `(cmpj/defroutes ~n
-     ~@(mapv (fn [x] `(nest ~x)) xs) ; call nest for every x in xs
-     ~@(mapv (fn [x] `(schema-route ~x)) xs)
-     (swagger-routes ~@xs)
-     (all-schemas-route ~@xs)
-     (root-route ~@xs)))
+     ~@(mapv (fn [x] `(nest ~x)) controllers)
+     ~@(mapv (fn [x] `(schema-route ~x)) controllers)
+     (swagger-routes ~@controllers)
+     (all-schemas-route ~@controllers)
+     (root-route ~@controllers)
+     ~@body))
 
 (defn params-rel
   "Returns a function that expands a URI Template for a specified rel with request params,
