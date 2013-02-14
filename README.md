@@ -1,21 +1,16 @@
-# swaggerator 
-[![Build
-Status](https://travis-ci.org/myfreeweb/swaggerator.png)](https://travis-ci.org/myfreeweb/swaggerator)
+# swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png)](https://travis-ci.org/myfreeweb/swaggerator)
 
-A REST API micro-framework for Clojure.
+A REST framework for Clojure that allows you to easily build high performance web APIs that:
 
-Includes:
-
-- some Ring middleware (JSON params using [Cheshire](https://github.com/dakrone/cheshire), `*host*` binding, pagination, link header)
-- syntactic sugar around [liberator](https://github.com/clojure-liberator/liberator) and [compojure](https://github.com/weavejester/compojure)
-- composable handlers for liberator
-- hypermedia support! [hal+json](http://stateless.co/hal_specification.html) and Link/Link-Template HTTP headers
-- a [Swagger](https://github.com/wordnik/swagger-core/wiki) implementation (hence the name)
-- JSON Schema validation using [this awesome library](https://github.com/fge/json-schema-validator) (the same schema is used for validation and documentation -- WINNING!)
+- support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
+- have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation
+- use JSON Schema for validation *and* documentation
+- have pagination
+- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit) and [authentication](https://github.com/cemerick/friend) and [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) with just middleware
 
 ## Usage
 
-See src/example.clj; run with `lein run -m example`
+For an example, see src/example.clj; run with `lein run -m example`.
 
 ## License
 
