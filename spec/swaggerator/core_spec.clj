@@ -25,7 +25,14 @@
                                 :paramType "path"}]}}
       :data-key :data
       :exists? (fn [ctx] {:data 1})
-      :presenter (fn [data] {:data data}))))
+      :presenter (fn [data] {:data data})))
+  (route "/" []
+    (listing-resource "Operations with all the things"
+      :schema thing-schema
+      :children-key :things
+      :child-url-template "/things/{name}"
+      :count (constantly 1)
+      :default-per-page 4)))
 
 (defroutes app-routes
   things)
@@ -51,7 +58,7 @@
                         :properties {:name {:type "string"}}
                         :required ["name"]}})
       (should= (:apis x)
-               [{:path "/things/{name}"
+               [ {:path "/things/{name}"
                  :description "Operations with individual things"
                  :operations [{:httpMethod "GET"
                                :nickname "getThing"
@@ -66,7 +73,10 @@
                                              :description "Name"
                                              :dataType "string"
                                              :required true
-                                             :paramType "path"}]}]}])
+                                             :paramType "path"}]}]}
+                {:path "/things/"
+                 :description "Operations with all the things"
+                 :operations []}])
       (should= (:resourcePath x) "/things")))
 
   (it "uses json schema for validation"

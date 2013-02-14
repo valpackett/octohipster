@@ -46,14 +46,14 @@
   (let [k (apply hash-map kvs)
         link-tpls (-> k :link-templates eval)
         schema (-> k :schema eval)]
-    (swap! *handled-content-types* (constantly []))
     (swap! *swagger-apis* conj
       {:path (-> @*url* eval clout->uri-template)
        :description (eval desc)
        :operations (-> k :doc eval resource->operations)})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
-     `(-> (lib/resource ~@kvs
-                        :available-media-types @*handled-content-types*)
+     `(-> (binding [*handled-content-types* (atom [])]
+            (lib/resource ~@kvs
+                          :available-media-types @*handled-content-types*))
           (wrap-json-schema-validator ~schema)
           ; add links:
           (wrap-add-link-templates ~link-tpls)
@@ -67,25 +67,25 @@
         rel (or (-> k :child-rel)
                 (-> ckey name singular))]
     `(-> (resource ~desc
-                   :method-allowed? (request-method-in :get :post)
-                   :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
-                   :link-mapping {~ckey ~rel}
-                   :handle-ok (default-list-handler (:presenter ~k) ~ckey)
-                   :post-redirect? true
-                   :see-other (params-rel ~rel)
-                   ~@kvs)
+            ~@(apply concat
+               (merge `{:method-allowed? (request-method-in :get :post)
+                        :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
+                        :link-mapping {~ckey ~rel}
+                        :handle-ok (default-list-handler (:presenter ~k) ~ckey)
+                        :post-redirect? true
+                        :see-other (params-rel ~rel)} k)))
          (wrap-pagination {:counter (:count ~k)
                            :default-per-page (:default-per-page ~k)}))))
 
 (defmacro entry-resource [desc & kvs]
   (let [k (apply hash-map kvs)]
     `(-> (resource ~desc
-                   :method-allowed? (request-method-in :get :put :delete)
-                   :respond-with-entity? true
-                   :new? false
-                   :can-put-to-missing? false
-                   :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))
-                   ~@kvs)
+             ~@(apply concat
+                (merge `{:method-allowed? (request-method-in :get :put :delete)
+                         :respond-with-entity? true
+                         :new? false
+                         :can-put-to-missing? false
+                         :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))} k)))
          (wrap-add-links [{:href (str @*controller-url* ".schema#")
                            :rel "describedBy"}]))))
 
