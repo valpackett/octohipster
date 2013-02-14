@@ -12,7 +12,9 @@ A REST framework for Clojure that allows you to easily build high performance we
 - have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation
 - use [JSON Schema](http://json-schema.org) for validation *and* documentation
 - have pagination
-- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware
+- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware.
+
+Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberator) and [Compojure](https://github.com/weavejester/compojure).
 
 ## Usage
 
