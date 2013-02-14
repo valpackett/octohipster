@@ -45,7 +45,9 @@
           (wrap-json-schema-validator ~schema)
           ; add links:
           (wrap-add-link-templates ~link-tpls)
-          wrap-add-self-link)))
+          wrap-add-self-link
+          ; independent:
+          wrap-handle-options-and-head)))
 
 (defmacro listing-resource [desc & kvs]
   (let [k (apply hash-map kvs)
@@ -53,7 +55,7 @@
         rel (or (-> k :child-rel)
                 (-> ckey name singular))]
     `(-> (resource ~desc
-                   :method-allowed? (request-method-in :get :head :post)
+                   :method-allowed? (request-method-in :get :post)
                    :link-templates [{:href (:child-url-template ~k) :rel ~rel}]
                    :link-mapping {~ckey ~rel}
                    :handle-ok (default-list-handler (:presenter ~k) ~ckey)
@@ -66,7 +68,7 @@
 (defmacro entry-resource [desc & kvs]
   (let [k (apply hash-map kvs)]
     `(resource ~desc
-               :method-allowed? (request-method-in :get :head :put :delete)
+               :method-allowed? (request-method-in :get :put :delete)
                :respond-with-entity? true
                :new? false
                :can-put-to-missing? false

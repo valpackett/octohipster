@@ -40,3 +40,12 @@
        (if-let [qs (:query-string req)]
          (str "?" qs)
          "")))
+
+(defn wrap-handle-options-and-head [handler]
+  (fn [req]
+    (case (:request-method req)
+      (:head :options) (-> req
+                           (assoc :request-method :get)
+                           handler
+                           (assoc :body nil))
+      (handler req))))
