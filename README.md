@@ -17,6 +17,7 @@ A REST framework for Clojure that allows you to easily build high performance we
 ## Usage
 
 For an example, see src/example.clj; run with `lein run -m example`.
+Also, [API Documentation](http://myfreeweb.github.com/swaggerator) is available.
 
 ## License
 

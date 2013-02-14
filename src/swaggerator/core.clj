@@ -1,10 +1,13 @@
 (ns swaggerator.core
+  "Functions and macros for building REST APIs through
+  creating resources, controllers and routes.
+  See src/example.clj for usage."
   (:require [liberator.core :as lib]
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
         [swaggerator json host link validator pagination handlers util]
-        (inflections core)))
+        [inflections core]))
 
 (def ^:dynamic *url* (atom ""))
 (def ^:dynamic *swagger-version* "1.1")

@@ -1,4 +1,13 @@
 (ns swaggerator.handlers
+  "Tools for creating handlers from presenters.
+
+  Presenters are functions that process data from the database
+  before sending it to the client. The simplest presenter is
+  clojure.core/identity - ie. changing nothing.
+
+  Handlers are functions that produce Ring responses from
+  Liberator contexts. You pass handlers to resource parameters,
+  usually :handle-ok."
   (:use [swaggerator json link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))
