@@ -36,7 +36,7 @@
         schema (-> k :schema eval)]
     (swap! *handled-content-types* (constantly []))
     (swap! *swagger-apis* conj
-      {:path (-> @*url* eval swaggerify-url-template)
+      {:path (-> @*url* eval clout->uri-template)
        :description (eval desc)
        :operations (-> k :doc eval resource->operations)})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)

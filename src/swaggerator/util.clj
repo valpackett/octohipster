@@ -1,10 +1,11 @@
 (ns swaggerator.util
   (:require [clojure.string :as string])
-  (:import [com.damnhandy.uri.template UriTemplate]))
+  (:import [com.damnhandy.uri.template UriTemplate]
+           [java.net URLEncoder]))
 
 (defn concatv [& xs] (into [] (apply concat xs)))
 
-(defn swaggerify-url-template [x]
+(defn clout->uri-template [x]
   (string/replace x #":([^/]+)" "{$1}"))
 
 (defmacro map-to-querystring
@@ -13,9 +14,9 @@
   [m]
   `(if (empty? ~m) ""
      (->> ~m
-          (map #(str (java.net.URLEncoder/encode (-> % key name) "UTF-8")
+          (map #(str (-> % key name (URLEncoder/encode "UTF-8"))
                      "="
-                     (java.net.URLEncoder/encode (-> % val str) "UTF-8")))
+                     (-> % val str  (URLEncoder/encode "UTF-8"))))
           (interpose "&")
           (apply str "?"))))
 
