@@ -12,8 +12,7 @@
 (defcontroller things "/things"
   "Operations about things"
   (route "/:name" [name]
-    (resource "Operations with individual things"
-      :method-allowed? (request-method-in :get :put :head)
+    (entry-resource "Operations with individual things"
       :schema thing-schema
       :doc {:get {:nickname "getThing"
                   :responseClass "Thing"
@@ -24,15 +23,19 @@
                                 :dataType "string"
                                 :required true
                                 :paramType "path"}]}}
-      :handle-ok (fn [ctx] (str "Name: " name)))))
+      :data-key :data
+      :exists? (fn [ctx] {:data 1})
+      :presenter (fn [data] {:data data}))))
 
 (defroutes app-routes
   things)
 
 (describe "swaggerator"
   (it "nests controllers"
-    (let [x (-> (request :get "/things/something") app-routes :body)]
-      (should= x "Name: something")))
+    (let [x (-> (request :get "/things/something")
+                (header "Accept" "application/json")
+                app-routes :body)]
+      (should= x "{\"data\":1}")))
 
   (it "outputs the resource listing"
     (let [x (-> (request :get "/api-docs.json") app-routes :body (json/parse-string true))]
@@ -77,8 +80,20 @@
                 (content-type "application/json")
                 (body (json/generate-string {:name "str"}))
                 app-routes)]
-      (should= 201 (:status x))))
-          
+      (should= 200 (:status x))))
+
+  (it "outputs the raw json schema"
+    (let [x (-> (request :get "/things.schema") app-routes)
+          b (-> x :body (json/parse-string true))]
+      (should= (-> x :headers (get "Content-Type")) "application/schema+json;charset=UTF-8")
+      (should= (:id b) "Thing")))
+
+  (it "links to the raw json schema"
+    (let [x (-> (request :get "/things/something")
+                (header "Accept" "application/json")
+                app-routes)]
+      (should= (-> x :headers (get "Link")) "</things/something>; rel=\"self\", </things.schema#>; rel=\"describedBy\"")))
+
   (it "outputs the schema for hal"
     (let [x (-> (request :get "/schema")
                 (content-type "application/hal+json")

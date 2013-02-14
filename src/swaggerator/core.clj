@@ -10,6 +10,7 @@
         [inflections core]))
 
 (def ^:dynamic *url* (atom ""))
+(def ^:dynamic *controller-url* (atom ""))
 (def ^:dynamic *swagger-version* "1.1")
 (def ^:dynamic *swagger-apis* (atom []))
 (def ^:dynamic *swagger-schemas* (atom {}))
@@ -78,13 +79,15 @@
 
 (defmacro entry-resource [desc & kvs]
   (let [k (apply hash-map kvs)]
-    `(resource ~desc
-               :method-allowed? (request-method-in :get :put :delete)
-               :respond-with-entity? true
-               :new? false
-               :can-put-to-missing? false
-               :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))
-               ~@kvs)))
+    `(-> (resource ~desc
+                   :method-allowed? (request-method-in :get :put :delete)
+                   :respond-with-entity? true
+                   :new? false
+                   :can-put-to-missing? false
+                   :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))
+                   ~@kvs)
+         (wrap-add-links [{:href (str @*controller-url* ".schema#")
+                           :rel "describedBy"}]))))
 
 (defmacro route
   "Returns a route for a resource, wrapped with all middleware a resource needs"
@@ -106,6 +109,7 @@
 (defmacro controller
   "Returns a controller - a set of routes with documentation metadata about included resources"
   [n url desc & body]
+  (swap! *controller-url* (constantly (eval url)))
   (swap! *swagger-apis* (constantly []))
   (swap! *swagger-schemas* (constantly {}))
   `(with-meta
@@ -146,12 +150,17 @@
         wrap-host-bind
         wrap-cors)))
 
-(defn- make-schema [xs]
-  (apply merge (map (comp :models meta) xs)))
+(defn- make-schema [x] (-> x meta :models))
 
-(defn schema-route [& xs]
+(defn- merge-schema [xs] (apply merge (map make-schema xs)))
+
+(defn schema-route [x]
+  (cmpj/GET (str (-> x meta :resourcePath) ".schema") []
+    (-> x make-schema first val serve-json-schema)))
+
+(defn all-schemas-route [& xs]
   (cmpj/GET "/schema" []
-    (serve-hal-json (make-schema xs))))
+    (serve-hal-json (merge-schema xs))))
 
 (defn root-route [& xs]
   (cmpj/GET "/" []
@@ -160,7 +169,7 @@
                      (mapv (fn [x] [(-> x meta :name)
                                     {:href  (-> x meta :resourcePath)
                                      :title (-> x meta :description)}]) xs))
-       :_embedded {:schema (assoc (make-schema xs) :_links {:self {:href "/schema"}})}})))
+       :_embedded {:schema (assoc (merge-schema xs) :_links {:self {:href "/schema"}})}})))
 
 (defmacro defroutes
   "Defines a Ring handler for specified controllers that routes
@@ -168,8 +177,9 @@
   [n & xs]
   `(cmpj/defroutes ~n
      ~@(mapv (fn [x] `(nest ~x)) xs) ; call nest for every x in xs
+     ~@(mapv (fn [x] `(schema-route ~x)) xs)
      (swagger-routes ~@xs)
-     (schema-route ~@xs)
+     (all-schemas-route ~@xs)
      (root-route ~@xs)))
 
 (defn params-rel

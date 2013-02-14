@@ -31,6 +31,12 @@
      :headers {"Content-Type" "application/json;charset=UTF-8"}
      :body (jsonify x)}))
 
+(defn serve-json-schema [x]
+  (fn [req]
+    {:status 200
+     :headers {"Content-Type" "application/schema+json;charset=UTF-8"}
+     :body (jsonify x)}))
+
 (defn serve-hal-json [x]
   (fn [req]
     {:status 200
