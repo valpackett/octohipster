@@ -31,9 +31,10 @@
         first
         :href)))
 
-(defn set-to-uri-template! [tpl x]
+(defn expand-uri-template [tpl x]
   (doseq [[k v] x]
-    (.set tpl (name k) v)))
+    (.set tpl (name k) v))
+  (.expand tpl))
 
 (defn full-uri [req]
   (str (:uri req)

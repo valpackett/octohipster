@@ -155,5 +155,4 @@
 (defn params-rel [rel]
   (fn [ctx]
     (let [tpl (uri-template-for-rel ctx rel)]
-      (set-to-uri-template! tpl (-> ctx :request :params))
-      (.expand tpl))))
+      (expand-uri-template tpl (-> ctx :request :params)))))

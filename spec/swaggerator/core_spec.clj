@@ -2,7 +2,6 @@
   (:require [cheshire.core :as json])
   (:use [speclj core]
         [ring.mock request]
-        [compojure.core :only [defroutes]]
         [swaggerator core]))
 
 (def thing-schema
@@ -45,29 +44,28 @@
 
   (it "outputs api declarations"
     (let [x (-> (request :get "/api-docs.json/things") app-routes :body (json/parse-string true))]
-     (should= x {:swaggerVersion "1.1"
-                 :basePath "http://localhost"
-                 :resourcePath "/things"
-                 :description "Operations about things"
-                 :apis [{:path "/things/{name}"
-                         :description "Operations with individual things"
-                         :operations [{:httpMethod "GET"
-                                       :nickname "getThing"
-                                       :summary "Get the thing"
-                                       :notes "Notes"
-                                       :responseClass "Thing"
-                                       :errorResponses [{:code 422
-                                                         :reason "The data did not pass schema validation"}
-                                                        {:code 404
-                                                         :reason "Resource not found"}]
-                                       :parameters [{:name "name"
-                                                     :description "Name"
-                                                     :dataType "string"
-                                                     :required true
-                                                     :paramType "path"}]}]}]
-                 :models {:Thing {:id "Thing"
-                                  :properties {:name {:type "string"}}
-                                  :required ["name"]}}})))
+      (should= (:models x)
+               {:Thing {:id "Thing"
+                        :properties {:name {:type "string"}}
+                        :required ["name"]}})
+      (should= (:apis x)
+               [{:path "/things/{name}"
+                 :description "Operations with individual things"
+                 :operations [{:httpMethod "GET"
+                               :nickname "getThing"
+                               :summary "Get the thing"
+                               :notes "Notes"
+                               :responseClass "Thing"
+                               :errorResponses [{:code 422
+                                                 :reason "The data did not pass schema validation"}
+                                                {:code 404
+                                                 :reason "Resource not found"}]
+                               :parameters [{:name "name"
+                                             :description "Name"
+                                             :dataType "string"
+                                             :required true
+                                             :paramType "path"}]}]}])
+      (should= (:resourcePath x) "/things")))
 
   (it "uses json schema for validation"
     (let [x (-> (request :put "/things/something")

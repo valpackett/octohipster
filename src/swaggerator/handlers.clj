@@ -22,10 +22,10 @@
 
 (defn add-self-hal-link [ctx dk x]
   (let [lm (or ((-> ctx :resource :link-mapping)) {})
-        tpl (uri-template-for-rel ctx (dk lm))]
-    (set-to-uri-template! tpl x)
+        tpl (uri-template-for-rel ctx (dk lm))
+        href (expand-uri-template tpl x)]
     (-> x
-        (assoc :_links {:self {:href (.expand tpl)}}))))
+        (assoc :_links {:self {:href href}}))))
 
 (defn wrap-handler-hal-json [handler]
   (swap! *handled-content-types* conj "application/hal+json")
