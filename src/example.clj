@@ -64,7 +64,7 @@
       :child-url-template "/contacts/{name}"
       :children-key :contacts ; the key you set in :exists?
       :exists? (fn [ctx] {:contacts (contacts-all)})
-      :count contacts-count
+      :count (fn [req] (contacts-count))
       :default-per-page 5
       :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
 

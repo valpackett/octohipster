@@ -21,7 +21,7 @@
           per-page (if-let [pparam (get-in req [:query-params "per_page"])]
                      (Integer/parseInt pparam)
                      default-pp)
-          last-page (-> (/ (counter) per-page) Math/ceil int)
+          last-page (-> (/ (counter req) per-page) Math/ceil int)
           prev-links (if (not= 1 page)
                        [{:rel "first" :href (uri-alter-query-params req {"page" 1})}
                         {:rel "prev"  :href (uri-alter-query-params req {"page" (- page 1)})}]
