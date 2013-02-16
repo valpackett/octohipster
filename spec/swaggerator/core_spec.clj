@@ -85,7 +85,7 @@
                 (body (json/generate-string {:name 1}))
                 app-routes)]
       (should= 422 (:status x))
-      (should= "integer" (-> x :body json/parse-string (get "/name") first (get "found"))))
+      (should= "integer" (-> x :body json/parse-string first (get "found"))))
     (let [x (-> (request :put "/things/something")
                 (content-type "application/json")
                 (body (json/generate-string {:name "str"}))

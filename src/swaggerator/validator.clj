@@ -1,7 +1,7 @@
 (ns swaggerator.validator
-  (:import [com.github.fge.jsonschema.main JsonSchema JsonSchemaFactory]
+  (:import [com.github.fge.jsonschema.main JsonValidator JsonSchemaFactory]
            [com.github.fge.jsonschema.util JsonLoader]
-           [com.github.fge.jsonschema.report ValidationReport]
+           [com.github.fge.jsonschema.report ProcessingReport]
            [com.fasterxml.jackson.core JsonFactory]
            [com.fasterxml.jackson.databind JsonNode ObjectMapper]
            [java.io StringWriter])
@@ -13,22 +13,21 @@
 (defn ^JsonNode clojure->jsonnode [x]
   (JsonLoader/fromString (json/generate-string x))) ; any better way of doing this?
 
-(defn ^JsonSchema make-schema-object [schema]
-  (.fromSchema (JsonSchemaFactory/defaultFactory)
-               (clojure->jsonnode schema)))
+(defn ^JsonValidator make-validator-object []
+  (.getValidator (JsonSchemaFactory/byDefault)))
 
 (defn make-validator [schema]
-  (let [so (make-schema-object schema)]
+  (let [v (make-validator-object)]
     (fn [x]
-      (.validate so (clojure->jsonnode x)))))
+      (.validate v (clojure->jsonnode schema) (clojure->jsonnode x)))))
 
-(defn is-success? [^ValidationReport report]
+(defn is-success? [^ProcessingReport report]
   (.isSuccess report))
 
-(defn to-json [^ValidationReport report]
+(defn to-json [^ProcessingReport report]
   (let [sw (StringWriter.)
         jgen (.createJsonGenerator (or factory/*json-factory* factory/json-factory) sw)]
-    (.writeTree ^ObjectMapper mapper jgen (.asJsonObject report))
+    (.writeTree ^ObjectMapper mapper jgen (.asJson report))
     (.toString sw)))
 
 (defn wrap-json-schema-validator
