@@ -9,6 +9,13 @@
    :headers {}
    :body (str {:limit *limit* :skip *skip*})})
 
+(def app-with-zero
+  (-> app
+      (wrap-pagination {:counter (constantly 0)
+                        :default-per-page 5})
+      wrap-link-header
+      wrap-params))
+
 (def app-1-page
   (-> app
       (wrap-pagination {:counter (constantly 4)
@@ -46,6 +53,8 @@
       (should= rsp "{:limit 5, :skip 15}")))
 
   (it "returns correct link headers"
+    (let [rsp (-> (request :get "/") app-with-zero)]
+      (should= (get-in rsp [:headers "Link"]) nil))
     (let [rsp (-> (request :get "/") app-1-page)]
       (should= (get-in rsp [:headers "Link"]) nil))
     (let [rsp (-> (request :get "/") app-2-pages)]
