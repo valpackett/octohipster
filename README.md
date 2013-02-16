@@ -1,7 +1,7 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[swaggerator "0.1.0-SNAPSHOT"]
+[swaggerator "0.1.1-SNAPSHOT"]
 ```
 
 # swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png?branch=master)](https://travis-ci.org/myfreeweb/swaggerator)
