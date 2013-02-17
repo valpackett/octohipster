@@ -107,6 +107,7 @@
   "Wraps a handler with wrap-handler-hal-json, wrap-handler-json and wrap-handler-link."
   [handler]
   (-> handler
+      wrap-handler-edn
       wrap-handler-hal-json
       wrap-handler-json
       wrap-handler-link ; last!!
