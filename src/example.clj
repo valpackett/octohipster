@@ -66,7 +66,7 @@
       :exists? (fn [ctx] {:contacts (contacts-all)})
       :count (fn [req] (contacts-count))
       :default-per-page 5
-      :post! (fn [ctx] (-> ctx :request :params contacts-insert!))
+      :post! (fn [ctx] (-> ctx :request :non-query-params contacts-insert!))
 
       :doc {:get {:nickname "getContacts"
                   :responseClass "Contact"
@@ -87,7 +87,7 @@
       :presenter contact-presenter
       :data-key :contact
       :put! (fn [ctx]
-              {:contact (-> ctx :request :params
+              {:contact (-> ctx :request :non-query-params
                          (contacts-update! (:contact ctx))
                          :name contacts-find-by-name)})
       :delete! (fn [ctx]
