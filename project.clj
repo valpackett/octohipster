@@ -1,4 +1,4 @@
-(defproject swaggerator "0.1.1-SNAPSHOT"
+(defproject swaggerator "0.1.2-SNAPSHOT"
   :description "A REST API framework with Swagger support"
   :url "https://github.com/myfreeweb/swaggerator"
   :license {:name "Apache License 2.0"
