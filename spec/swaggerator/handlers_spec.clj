@@ -17,6 +17,18 @@
           ctx {:representation {:media-type "text/plain"}}]
       (should= (h ctx) ctx))))
 
+(describe "wrap-handler-edn"
+  (it "outputs edn for edn requests"
+    (let [h (-> identity wrap-handler-edn)
+          ctx {:representation {:media-type "application/edn"}
+               :data-key :things
+               :things {:a 1}}]
+      (should= (h ctx) "{:a 1}")))
+  (it "does not touch non-edn requests"
+    (let [h (-> identity wrap-handler-edn)
+          ctx {:representation {:media-type "text/plain"}}]
+      (should= (h ctx) ctx))))
+
 (describe "wrap-handler-link"
   (it "passes :links and :link-templates to ring middleware"
     (let [links 1
