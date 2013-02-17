@@ -81,6 +81,17 @@
       (should= (h ctx)
                {:_hal {:_embedded {:things [{:a 1
                                              :_links {:self {:href "/things/1"}}}]}}})))
+  (it "creates an _embedded wrapper for embed-mapping"
+    (let [h (-> identity wrap-handler-hal-json)
+          ctx {:representation {:media-type "application/hal+json"}
+               :resource {:embed-mapping (constantly {:things "thing"})
+                          :link-templates (constantly [{:rel "thing" :href "/yo/{a}/things/{b}"}])}
+               :data-key :yo
+               :yo {:a 1 :things [{:b 2}]}}]
+      (should= (-> ctx h :_hal)
+               {:_embedded {:things [{:b 2
+                                      :_links {:self {:href "/yo/1/things/2"}}}]}
+                :a 1})))
   (it "does not touch non-hal+json requests"
     (let [h (-> identity wrap-handler-hal-json)
           ctx {:representation {:media-type "application/json"}}]
