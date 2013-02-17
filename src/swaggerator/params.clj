@@ -1,5 +1,6 @@
 (ns swaggerator.params
   (:require [cheshire.core :as json]
+            [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn])
   (:use [swaggerator util]))
 
@@ -21,6 +22,24 @@
                    :params (merge (:params req) edn-params))]
         (handler req*))
       (handler req))))
+
+(defn- yaml-request? [req]
+  (if-let [#^String type (:content-type req)]
+    (not (empty? (re-find #"^(application|text)/(vnd.+)?(x-)?yaml" type)))))
+
+(defn wrap-yaml-params
+  "Ring middleware that parses YAML, updates :params and
+  :non-query-params with received data."
+  [handler]
+  (fn [req]
+    (if-let [body (and (yaml-request? req) (:body req))]
+      (let [yaml-params (-> body slurp yaml/parse-string)
+            req* (assoc req
+                   :non-query-params (merge (or (:non-query-params req) {}) yaml-params)
+                   :params (merge (:params req) yaml-params))]
+        (handler req*))
+      (handler req))))
+
 
 (defn- json-request? [req]
   (if-let [#^String type (:content-type req)]

@@ -9,6 +9,7 @@
                  [compojure "1.1.5"]
                  [liberator "0.8.0"]
                  [cheshire "5.0.1"]
+                 [clj-yaml "0.4.0"]
                  [inflections "0.7.8"]
                  [com.github.fge/json-schema-validator "1.99.9"]
                  [com.damnhandy/handy-uri-templates "1.1.7"]]

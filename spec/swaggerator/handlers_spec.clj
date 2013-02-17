@@ -29,6 +29,18 @@
           ctx {:representation {:media-type "text/plain"}}]
       (should= (h ctx) ctx))))
 
+(describe "wrap-handler-yaml"
+  (it "outputs edn for yaml requests"
+    (let [h (-> identity wrap-handler-yaml)
+          ctx {:representation {:media-type "application/yaml"}
+               :data-key :things
+               :things {:a 1}}]
+      (should= (h ctx) "{a: 1}\n")))
+  (it "does not touch non-yaml requests"
+    (let [h (-> identity wrap-handler-yaml)
+          ctx {:representation {:media-type "text/plain"}}]
+      (should= (h ctx) ctx))))
+
 (describe "wrap-handler-link"
   (it "passes :links and :link-templates to ring middleware"
     (let [links 1

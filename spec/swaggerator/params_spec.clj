@@ -14,6 +14,15 @@
                   (content-type "application/json")
                   (body "{\"a\":1}"))))))
 
+(describe "wrap-yaml-params"
+  (it "appends params to :non-query-params and :params"
+    (doseq [ctype ["application/yaml" "application/x-yaml"
+                   "text/yaml" "text/x-yaml"]]
+      (should= {:non-query-params {:a 1}
+                :params {:a 1}}
+               ((-> app wrap-yaml-params)
+                (-> (request :post "/") (content-type ctype) (body "{a: 1}")))))))
+
 (describe "wrap-edn-params"
   (it "appends params to :non-query-params and :params"
     (should= {:non-query-params {:a 1}

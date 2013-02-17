@@ -14,6 +14,7 @@
   context as an argument, not a Ring request.
   When you create your own, follow the naming convention:
   wrap-handler-*, not wrap-*."
+  (:require [clj-yaml.core :as yaml])
   (:use [swaggerator json link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))
@@ -38,6 +39,22 @@
       "application/edn" (let [result (handler ctx)
                               k (:data-key result)]
                            (-> result k pr-str))
+      (handler ctx))))
+
+(defn wrap-handler-yaml
+  "Wraps a handler with a YAML handler."
+  [handler]
+  (swap! *handled-content-types* conj "application/yaml")
+  (swap! *handled-content-types* conj "application/x-yaml")
+  (swap! *handled-content-types* conj "text/yaml")
+  (swap! *handled-content-types* conj "text/x-yaml")
+  (fn [ctx]
+    (case (-> ctx :representation :media-type)
+      ("application/yaml" "application/x-yaml"
+       "text/yaml" "text/x-yaml")
+        (let [result (handler ctx)
+              k (:data-key result)]
+          (-> result k yaml/generate-string))
       (handler ctx))))
 
 ; hal is implemented through a ring middleware
@@ -108,6 +125,7 @@
   [handler]
   (-> handler
       wrap-handler-edn
+      wrap-handler-yaml
       wrap-handler-hal-json
       wrap-handler-json
       wrap-handler-link ; last!!
