@@ -41,19 +41,23 @@
 
 (defmacro resource
   "Returns a Resource with specified description and parameters,
-  stores its documentation data in a secret place for later consumption by swaggerator.core/controller"
+  stores its documentation data in a secret place for later consumption by swaggerator.core/controller.
+
+  Note: the thing you pass to :handle-ok must be a pure function (no side effects)"
   [desc & kvs]
   (let [k (apply hash-map kvs)
         link-tpls (-> k :link-templates eval)
-        schema (-> k :schema eval)]
+        schema (-> k :schema eval)
+        [okh cts] (binding [*handled-content-types* (atom [])]
+                    [(-> k :handle-ok eval) @*handled-content-types*])]
     (swap! *swagger-apis* conj
       {:path (-> @*url* eval clout->uri-template)
        :description (eval desc)
-       :operations (-> k :doc eval resource->operations)})
+       :operations (map #(assoc % :produces cts)
+                        (-> k :doc eval resource->operations))})
     (swap! *swagger-schemas* assoc (-> schema :id) schema)
-     `(-> (binding [*handled-content-types* (atom [])]
-            (lib/resource ~@kvs
-                          :available-media-types @*handled-content-types*))
+     `(-> (lib/resource ~@kvs
+                        :available-media-types ~cts)
           (wrap-json-schema-validator ~schema)
           ; add links:
           (wrap-add-link-templates ~link-tpls)

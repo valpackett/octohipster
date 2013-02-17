@@ -58,13 +58,17 @@
                         :properties {:name {:type "string"}}
                         :required ["name"]}})
       (should= (:apis x)
-               [ {:path "/things/{name}"
+               [{:path "/things/{name}"
                  :description "Operations with individual things"
                  :operations [{:httpMethod "GET"
                                :nickname "getThing"
                                :summary "Get the thing"
                                :notes "Notes"
                                :responseClass "Thing"
+                               :produces ["application/edn" "application/yaml"
+                                          "application/x-yaml" "text/yaml" "text/x-yaml"
+                                          "application/x-msgpack" "application/hal+json"
+                                          "application/json"]
                                :errorResponses [{:code 422
                                                  :reason "The data did not pass schema validation"}
                                                 {:code 404
