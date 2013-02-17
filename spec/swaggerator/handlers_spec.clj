@@ -30,7 +30,7 @@
       (should= (h ctx) ctx))))
 
 (describe "wrap-handler-yaml"
-  (it "outputs edn for yaml requests"
+  (it "outputs yaml for yaml requests"
     (let [h (-> identity wrap-handler-yaml)
           ctx {:representation {:media-type "application/yaml"}
                :data-key :things
@@ -38,6 +38,18 @@
       (should= (h ctx) "{a: 1}\n")))
   (it "does not touch non-yaml requests"
     (let [h (-> identity wrap-handler-yaml)
+          ctx {:representation {:media-type "text/plain"}}]
+      (should= (h ctx) ctx))))
+
+(describe "wrap-handler-msgpack"
+  (it "outputs msgpack for msgpack requests"
+    (let [h (-> identity wrap-handler-msgpack)
+          ctx {:representation {:media-type "application/x-msgpack"}
+               :data-key :things
+               :things {:a 1}}]
+      (should= (map int (slurp (h ctx))) [65533 65533 58 97 1])))
+  (it "does not touch non-msgpack requests"
+    (let [h (-> identity wrap-handler-msgpack)
           ctx {:representation {:media-type "text/plain"}}]
       (should= (h ctx) ctx))))
 

@@ -14,7 +14,8 @@
   context as an argument, not a Ring request.
   When you create your own, follow the naming convention:
   wrap-handler-*, not wrap-*."
-  (:require [clj-yaml.core :as yaml])
+  (:require [clj-yaml.core :as yaml]
+            [clj-msgpack.core :as mp])
   (:use [swaggerator json link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))
@@ -39,6 +40,17 @@
       "application/edn" (let [result (handler ctx)
                               k (:data-key result)]
                            (-> result k pr-str))
+      (handler ctx))))
+
+(defn wrap-handler-msgpack
+  "Wraps a handler with a MessagePack handler."
+  [handler]
+  (swap! *handled-content-types* conj "application/x-msgpack")
+  (fn [ctx]
+    (case (-> ctx :representation :media-type)
+      "application/x-msgpack" (let [result (handler ctx)
+                                    k (:data-key result)]
+                                  (java.io.ByteArrayInputStream. (-> result k mp/pack)))
       (handler ctx))))
 
 (defn wrap-handler-yaml
@@ -126,6 +138,7 @@
   (-> handler
       wrap-handler-edn
       wrap-handler-yaml
+      wrap-handler-msgpack
       wrap-handler-hal-json
       wrap-handler-json
       wrap-handler-link ; last!!

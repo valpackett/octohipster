@@ -103,6 +103,7 @@
                  wrap-cors
                  wrap-json-params
                  wrap-edn-params
+                 wrap-msgpack-params
                  wrap-keyword-params
                  wrap-nested-params
                  wrap-params)))
