@@ -20,7 +20,7 @@
   (map-to-querystring (merge (:query-params req) x)))
 
 (defn uri-alter-query-params [req x]
-  (str (:uri req) (alter-query-params req x)))
+  (str (or (:path-info req) (:uri req)) (alter-query-params req x)))
 
 (defn uri-template-for-rel [ctx rel]
   (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
@@ -39,8 +39,16 @@
       (.set tpl (name k) v))
     (.expand tpl)))
 
+(defn context-relative-uri
+  "Returns the full context-relative URI of a Ring request (ie. includes the query string)."
+  [req]
+  (str (or (:path-info req) (:uri req))
+       (if-let [qs (:query-string req)]
+         (str "?" qs)
+         "")))
+
 (defn full-uri
-  "Returns the full relative URI of a Ring request (ie. includes the query string)."
+  "Returns the full context-relative URI of a Ring request (ie. includes the query string)."
   [req]
   (str (:uri req)
        (if-let [qs (:query-string req)]

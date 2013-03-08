@@ -90,7 +90,7 @@
                          :new? false
                          :can-put-to-missing? false
                          :handle-ok (default-entry-handler (:presenter ~k) (:data-key ~k))} k)))
-         (wrap-add-links [{:href (str @*controller-url* ".schema#")
+         (wrap-add-links [{:href (str "/.." @*controller-url* ".schema#")
                            :rel "describedBy"}]))))
 
 (defmacro route
@@ -99,6 +99,7 @@
   (swap! *url* (constantly url))
   `(cmpj/ANY ~url ~binds
              (-> ~@body
+                 wrap-context-relative-links
                  ; consume links:
                  wrap-hal-json
                  wrap-link-header
@@ -170,12 +171,13 @@
 
 (defn root-route [& xs]
   (cmpj/GET "/" []
-    (serve-hal-json
-      {:_links (into {}
-                     (mapv (fn [x] [(-> x meta :name)
-                                    {:href  (-> x meta :resourcePath)
-                                     :title (-> x meta :description)}]) xs))
-       :_embedded {:schema (assoc (merge-schema xs) :_links {:self {:href "/all.schema"}})}})))
+    (fn [req]
+      (serve-hal-json
+        {:_links (into {}
+                       (mapv (fn [x] [(-> x meta :name)
+                                      {:href  (str (:context req) (-> x meta :resourcePath))
+                                       :title (-> x meta :description)}]) xs))
+         :_embedded {:schema (assoc (merge-schema xs) :_links {:self {:href (str (:context req) "/all.schema")}})}}))))
 
 (defmacro defroutes
   "Defines a Ring handler for specified controllers that routes

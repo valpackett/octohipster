@@ -1,5 +1,6 @@
 (ns swaggerator.link
-  (:use [swaggerator util]))
+  (:use [swaggerator util])
+  (:require [clojure.string :as string]))
 
 (defn- make-link-header-field [[k v]]
   (format "%s=\"%s\"" (name k) v))
@@ -63,5 +64,19 @@
     (let [rsp (handler req)]
       (assoc rsp :links
              (concatv (or (:links rsp) [])
-                      [{:href (full-uri req)
+                      [{:href (context-relative-uri req)
                         :rel "self"}])))))
+
+(defn prepend-to-href [uri-context l]
+  (assoc l :href
+         (string/replace (str uri-context (:href l))
+                         #"/[^/]+/\.\." "")))
+
+(defn wrap-context-relative-links [handler]
+  (fn [req]
+    (let [uri-context (or (:context req) "")
+          prepender (partial prepend-to-href uri-context)
+          rsp (handler req)]
+      (-> rsp
+          (assoc :links (map prepender (:links rsp)))
+          (assoc :link-templates (map prepender (:link-templates rsp)))))))

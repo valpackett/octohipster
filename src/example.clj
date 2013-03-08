@@ -61,7 +61,7 @@
     (listing-resource "Operations with all contacts"
       :schema contacts-schema
       :presenter contact-presenter
-      :child-url-template "/contacts/{name}"
+      :child-url-template "/{name}"
       :children-key :contacts ; the key you set in :exists?
       :exists? (fn [ctx] {:contacts (contacts-all)})
       :count (fn [req] (contacts-count))
@@ -83,7 +83,7 @@
       :exists? (fn [ctx]
                  (when-let [e (contacts-find-by-name name)]
                    {:contact e
-                    :links [{:href "/contacts" :rel "listing"}]}))
+                    :links [{:href "" :rel "listing"}]}))
       :presenter contact-presenter
       :data-key :contact
       :put! (fn [ctx]
