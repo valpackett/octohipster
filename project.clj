@@ -8,13 +8,13 @@
                  [ring/ring-core "1.1.8"]
                  [compojure "1.1.5"]
                  [liberator "0.8.0"]
-                 [cheshire "5.0.1"]
+                 [cheshire "5.0.2"]
                  [clj-yaml "0.4.0"]
                  [clj-msgpack "0.2.0"]
-                 [inflections "0.7.8"]
+                 [inflections "0.8.0"]
                  [com.github.fge/json-schema-validator "1.99.9"]
                  [com.damnhandy/handy-uri-templates "1.1.7"]]
-  :profiles {:1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}
+  :profiles {:1.5 {:dependencies [[org.clojure/clojure "1.5.0"]]}
              :dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
                                   [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]
                                   [http-kit "2.0.0-RC4"           :exclusions [org.clojure/clojure]]

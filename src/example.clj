@@ -2,7 +2,7 @@
 ;;;; Has validation, pagination, rate limiting, Swagger documentation
 (ns example
   (:use [org.httpkit server]
-        [swaggerator core pagination handlers]
+        [swaggerator core pagination]
         [ring.middleware ratelimit])
   (:import [org.bson.types ObjectId])
   (:require [monger.core :as mg]
@@ -81,9 +81,12 @@
     (entry-resource "Operations with individual contacts"
       :schema contacts-schema
       :exists? (fn [ctx]
-                 (when-let [e (contacts-find-by-name name)]
-                   {:contact e
-                    :links [{:href "" :rel "listing"}]}))
+                 {:contact (contacts-find-by-name name)
+                  :links [{:rel "listing"
+                           :href ""}]})
+      ; :exists? (fn [ctx]
+      ;            (when-let [e (contacts-find-by-name name)]
+      ;              {:contact e}))
       :presenter contact-presenter
       :data-key :contact
       :put! (fn [ctx]

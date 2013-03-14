@@ -8,7 +8,7 @@ Current [semantic](http://semver.org/) version:
 
 A REST framework for Clojure that allows you to easily build high performance web APIs that:
 
-- support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
+- support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html), [Collection+JSON](http://amundsen.com/media-types/collection/) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
 - have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation
 - use [JSON Schema](http://json-schema.org) for validation *and* documentation
 - have pagination

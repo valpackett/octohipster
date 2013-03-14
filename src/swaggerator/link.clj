@@ -67,10 +67,11 @@
                       [{:href (context-relative-uri req)
                         :rel "self"}])))))
 
+(defn un-dotdot [x]
+  (string/replace x #"/[^/]+/\.\." ""))
+
 (defn prepend-to-href [uri-context l]
-  (assoc l :href
-         (string/replace (str uri-context (:href l))
-                         #"/[^/]+/\.\." "")))
+  (assoc l :href (un-dotdot (str uri-context (:href l)))))
 
 (defn wrap-context-relative-links [handler]
   (fn [req]

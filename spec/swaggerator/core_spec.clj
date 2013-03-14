@@ -68,7 +68,7 @@
                                :produces ["application/edn" "application/yaml"
                                           "application/x-yaml" "text/yaml" "text/x-yaml"
                                           "application/x-msgpack" "application/hal+json"
-                                          "application/json"]
+                                          "application/vnd.collection+json" "application/json"]
                                :errorResponses [{:code 422
                                                  :reason "The data did not pass schema validation"}
                                                 {:code 404
