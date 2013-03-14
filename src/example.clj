@@ -81,12 +81,10 @@
     (entry-resource "Operations with individual contacts"
       :schema contacts-schema
       :exists? (fn [ctx]
-                 {:contact (contacts-find-by-name name)
+                 {; :contact (contacts-find-by-name name) ; FIXME
+                  :contact (contacts-find-by-name "hello")
                   :links [{:rel "listing"
                            :href ""}]})
-      ; :exists? (fn [ctx]
-      ;            (when-let [e (contacts-find-by-name name)]
-      ;              {:contact e}))
       :presenter contact-presenter
       :data-key :contact
       :put! (fn [ctx]

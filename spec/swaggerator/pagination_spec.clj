@@ -8,6 +8,7 @@
 (defn app [req]
   {:status 200
    :headers {}
+   :links (:links req)
    :body (str {:limit *limit* :skip *skip*})})
 
 (def app-with-zero

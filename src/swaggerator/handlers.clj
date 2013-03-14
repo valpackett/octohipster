@@ -21,6 +21,11 @@
 
 (def ^:dynamic *handled-content-types* (atom []))
 
+(defn resp-with-links [ctx b]
+  {:links (:links ctx)
+   :link-templates (:link-templates ctx)
+   :body b})
+
 (defn wrap-handler-json
   "Wraps a handler with a JSON handler."
   [handler]
@@ -29,7 +34,7 @@
     (case (-> ctx :representation :media-type)
       "application/json" (let [result (handler ctx)
                                k (:data-key result)]
-                           (-> result k jsonify))
+                           (resp-with-links ctx (-> result k jsonify)))
       (handler ctx))))
 
 (defn wrap-handler-edn
@@ -40,7 +45,7 @@
     (case (-> ctx :representation :media-type)
       "application/edn" (let [result (handler ctx)
                               k (:data-key result)]
-                           (-> result k pr-str))
+                           (resp-with-links ctx (-> result k pr-str)))
       (handler ctx))))
 
 (defn wrap-handler-msgpack
@@ -51,7 +56,7 @@
     (case (-> ctx :representation :media-type)
       "application/x-msgpack" (let [result (handler ctx)
                                     k (:data-key result)]
-                                  (java.io.ByteArrayInputStream. (-> result k mp/pack)))
+                                  (resp-with-links ctx (java.io.ByteArrayInputStream. (-> result k mp/pack))))
       (handler ctx))))
 
 (defn wrap-handler-yaml
@@ -67,11 +72,8 @@
        "text/yaml" "text/x-yaml")
         (let [result (handler ctx)
               k (:data-key result)]
-          (-> result k yaml/generate-string))
+          (resp-with-links ctx (-> result k yaml/generate-string)))
       (handler ctx))))
-
-; hal and cj are implemented through a ring middleware
-; because of the need to capture links that are not from liberator
 
 (defn self-link [ctx dk x]
   (when-let [lm (-> ctx :resource :link-mapping)]
@@ -104,30 +106,15 @@
   (swap! *handled-content-types* conj "application/hal+json")
   (fn [ctx]
     (case (-> ctx :representation :media-type)
-      "application/hal+json" (let [result (-> ctx handler)
-                                   dk (:data-key result)
-                                   result (dk result)
-                                   result (if (map? result)
-                                            (hal-embedify ctx result)
-                                            {:_embedded {dk (map (partial hal-embedify ctx) (map (partial add-self-hal-link ctx dk) result))}})]
-                               {:_hal result})
+      "application/hal+json"
+        (let [rsp (handler ctx)
+              dk (:data-key rsp)
+              result (dk rsp)
+              result (if (map? result)
+                       (hal-embedify ctx result)
+                       {:_embedded {dk (map (partial hal-embedify ctx) (map (partial add-self-hal-link ctx dk) result))}})]
+          {:body (jsonify (assoc result :_links (links-as-map rsp)))})
       (handler ctx))))
-
-(defn wrap-hal-json
-  "Ring middleware for supporting the HAL+JSON handler wrapper."
-  [handler]
-  (fn [req]
-    (let [rsp (handler req)]
-      (if-let [hal (:_hal rsp)]
-        (-> rsp
-            (assoc :body
-                   (-> hal
-                       (assoc :_links (links-as-map rsp))
-                       jsonify))
-            (dissoc :link-templates)
-            (dissoc :links)
-            (dissoc :_hal))
-        rsp))))
 
 (defn add-self-cj-link [ctx dk x]
   (assoc x :href (self-link ctx dk x)))
@@ -144,53 +131,41 @@
   (fn [ctx]
     (case (-> ctx :representation :media-type)
       "application/vnd.collection+json"
-        (let [result (-> ctx handler)
-              dk (:data-key result)
-              result (dk result)]
-          (if (map? result)
-            {:_cj (cj-wrap ctx dk result)}
-            {:_cj (map (partial cj-wrap ctx dk) result)}))
+        (let [rsp (handler ctx)
+              links (links-as-map rsp)
+              dk (:data-key rsp)
+              result (dk rsp)
+              items (if (map? result)
+                      [(-> (cj-wrap ctx dk result)
+                           (assoc :links (-> links
+                                             (dissoc "self")
+                                             (dissoc "listing")))
+                           (assoc :href (:href (get links "self"))))]
+                      (map (partial cj-wrap ctx dk) result))
+              coll {:version "1.0"
+                    :href (if-let [up (get links "listing")]
+                            (:href up)
+                            (-> ctx :request :uri))
+                    :links (if (map? result) [] links)
+                    :items items}]
+          {:body (jsonify {:collection coll})})
       (handler ctx))))
 
-(defn wrap-collection-json
-  "Ring middleware for supporting the Collection+JSON handler wrapper."
-  [handler]
-  (fn [req]
-    (let [rsp (handler req)]
-      (if-let [cj (:_cj rsp)]
-        (let [links (links-as-map rsp)
-              body (-> {:collection {:version "1.0"
-                                     :href (if-let [up (get links "listing")]
-                                             (:href up)
-                                             (:uri req))
-                                     :links (if (map? cj) [] links)
-                                     :items (if (map? cj) [(-> cj
-                                                               (assoc :links (-> links
-                                                                                 (dissoc "self")
-                                                                                 (dissoc "listing")))
-                                                               (assoc :href (:href (get links "self"))))] cj)}}
-                       jsonify)]
-          (-> rsp
-            (assoc :body body)
-            (dissoc :link-templates)
-            (dissoc :links)
-            (dissoc :_cj)))
-        rsp))))
-
-(defn wrap-handler-link
-  "Wraps a handler with a function that passes :links and :link-templates
-  to the response for consumption by swaggerator.handlers/wrap-hal-json,
-  swaggerator.link/wrap-link-header or any other middleware."
-  [handler]
+(defn wrap-handler-request-links [handler]
   (fn [ctx]
-    (let [result (handler ctx)]
-      (if (map? result)
-        (-> result
-            (assoc :links (:links ctx))
-            (assoc :link-templates (:link-templates ctx)))
-        {:body result
-         :links (:links ctx)
-         :link-templates (:link-templates ctx)}))))
+    (-> ctx
+        (update-in [:links] concatv (-> ctx :request :links))
+        (update-in [:link-templates] concatv (-> ctx :request :link-templates))
+        handler)))
+
+(defn wrap-handler-context-relative-links [handler]
+  (fn [ctx]
+    (let [uri-context (or (-> ctx :request :context) "")
+          prepender (partial prepend-to-href uri-context)]
+      (-> ctx
+          (assoc :links (map prepender (:links ctx)))
+          (assoc :link-templates (map prepender (:link-templates ctx)))
+          handler))))
 
 (defn wrap-default-handler
   "Wraps a handler with all the data format wrappers"
@@ -202,8 +177,8 @@
       wrap-handler-hal-json
       wrap-handler-collection-json
       wrap-handler-json
-      wrap-handler-link ; last!!
-      ))
+      wrap-handler-context-relative-links
+      wrap-handler-request-links))
 
 (defn list-handler
   "Makes a handler that maps a presenter over data that is retrieved

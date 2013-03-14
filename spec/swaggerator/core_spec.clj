@@ -106,7 +106,7 @@
     (let [x (-> (request :get "/things/something")
                 (header "Accept" "application/json")
                 app-routes)]
-      (should= (-> x :headers (get "Link")) "</things/something>; rel=\"self\", </things.schema#>; rel=\"describedBy\"")))
+      (should= (-> x :headers (get "Link")) "</things.schema#>; rel=\"describedBy\", </things/something>; rel=\"self\"")))
 
   (it "outputs the schema for hal"
     (let [x (-> (request :get "/all.schema")

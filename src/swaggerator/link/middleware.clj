@@ -4,8 +4,7 @@
 
 (defn wrap-add-links-1 [handler links k]
   (fn [req]
-    (let [rsp (handler req)]
-      (assoc rsp k (concatv (or (k rsp) []) links)))))
+    (handler (assoc req k (concatv (or (k req) []) links)))))
 
 (defn wrap-add-link-templates
   "Ring middleware that adds specified templates to :link-templates."
@@ -19,17 +18,8 @@
   "Ring middleware that adds a link to the requested URI as rel=self to :links."
   [handler]
   (fn [req]
-    (let [rsp (handler req)]
-      (assoc rsp :links
-             (concatv (or (:links rsp) [])
+    (handler
+      (assoc req :links
+             (concatv (or (:links req) [])
                       [{:href (context-relative-uri req)
                         :rel "self"}])))))
-
-(defn wrap-context-relative-links [handler]
-  (fn [req]
-    (let [uri-context (or (:context req) "")
-          prepender (partial prepend-to-href uri-context)
-          rsp (handler req)]
-      (-> rsp
-          (assoc :links (map prepender (:links rsp)))
-          (assoc :link-templates (map prepender (:link-templates rsp)))))))

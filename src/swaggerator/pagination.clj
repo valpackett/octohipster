@@ -30,9 +30,8 @@
           next-links (if (not= last-page page)
                        [{:rel "next"  :href (uri-alter-query-params req {"page" (+ page 1)})}
                         {:rel "last"  :href (uri-alter-query-params req {"page" last-page})}]
-                       [])
-          rsp (binding [*skip* (* per-page (- page 1))
-                        *limit* per-page]
-                (handler req))]
-      (assoc rsp :links
-             (concatv (:links rsp) prev-links next-links)))))
+                       [])]
+      (binding [*skip* (* per-page (- page 1))
+                *limit* per-page]
+        (handler (assoc req :links
+                        (concatv (:links req) prev-links next-links)))))))

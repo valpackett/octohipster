@@ -100,12 +100,7 @@
   (swap! *url* (constantly url))
   `(cmpj/ANY ~url ~binds
              (-> ~@body
-                 wrap-context-relative-links
-                 ; consume links:
-                 wrap-collection-json
-                 wrap-hal-json
                  wrap-link-header
-                 ; independent:
                  wrap-host-bind
                  wrap-cors
                  wrap-json-params

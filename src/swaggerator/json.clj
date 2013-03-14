@@ -4,6 +4,8 @@
 
 (defn jsonify [x] (json/generate-string x))
 
+(defn unjsonify [x] (json/parse-string x true))
+
 (defn serve-json [x]
   (fn [req]
     {:status 200
