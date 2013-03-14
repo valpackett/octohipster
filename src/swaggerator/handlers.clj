@@ -16,7 +16,8 @@
   wrap-handler-*, not wrap-*."
   (:require [clj-yaml.core :as yaml]
             [clj-msgpack.core :as mp])
-  (:use [swaggerator json link util]))
+  (:use [swaggerator json util]
+        [swaggerator.link util]))
 
 (def ^:dynamic *handled-content-types* (atom []))
 
@@ -72,12 +73,6 @@
 ; hal and cj are implemented through a ring middleware
 ; because of the need to capture links that are not from liberator
 
-(defn hal-links [rsp]
-  (into {}
-    (concatv
-      (map (fn [x] [(:rel x) (-> x (dissoc :rel))]) (:links rsp))
-      (map (fn [x] [(:rel x) (-> x (dissoc :rel) (assoc :templated true))]) (:link-templates rsp)))))
-
 (defn self-link [ctx dk x]
   (when-let [lm (-> ctx :resource :link-mapping)]
     (when-let [tpl (uri-template-for-rel ctx (dk (lm)))]
@@ -127,7 +122,7 @@
         (-> rsp
             (assoc :body
                    (-> hal
-                       (assoc :_links (hal-links rsp))
+                       (assoc :_links (links-as-map rsp))
                        jsonify))
             (dissoc :link-templates)
             (dissoc :links)
@@ -163,7 +158,7 @@
   (fn [req]
     (let [rsp (handler req)]
       (if-let [cj (:_cj rsp)]
-        (let [links (hal-links rsp)
+        (let [links (links-as-map rsp)
               body (-> {:collection {:version "1.0"
                                      :href (if-let [up (get links "listing")]
                                              (:href up)

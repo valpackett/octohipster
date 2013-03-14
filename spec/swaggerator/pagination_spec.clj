@@ -1,5 +1,6 @@
 (ns swaggerator.pagination-spec
-  (:use [swaggerator pagination link]
+  (:use [swaggerator pagination]
+        [swaggerator.link header]
         [ring.middleware params]
         [ring.mock request]
         [speclj core]))

@@ -6,7 +6,8 @@
             [compojure.core :as cmpj]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator params json host link validator pagination handlers util]
+        [swaggerator params json host validator pagination handlers util]
+        [swaggerator.link header middleware]
         [inflections core]))
 
 (def ^:dynamic *url* (atom ""))

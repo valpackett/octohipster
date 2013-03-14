@@ -1,7 +1,7 @@
 (ns swaggerator.link-spec
   (:use [speclj core]
         [ring.mock request]
-        [swaggerator link]))
+        [swaggerator.link header]))
 
 (describe "make-link-header"
   (it "makes the link header"
