@@ -1,5 +1,4 @@
 (ns swaggerator.params-spec
-  (:require [clj-msgpack.core :as mp])
   (:use [speclj core]
         [ring.mock request]
         [swaggerator params]))
@@ -23,15 +22,6 @@
                 :params {:a 1}}
                ((-> app wrap-yaml-params)
                 (-> (request :post "/") (content-type ctype) (body "{a: 1}")))))))
-
-(describe "wrap-msgpack-params"
-  (it "appends params to :non-query-params and :params"
-    (should= {:non-query-params {"a" 1}
-              :params {"a" 1}}
-             ((-> app wrap-msgpack-params)
-              (-> (request :post "/")
-                  (content-type "application/x-msgpack")
-                  (assoc :body (java.io.ByteArrayInputStream. (mp/pack {"a" 1}))))))))
 
 (describe "wrap-edn-params"
   (it "appends params to :non-query-params and :params"

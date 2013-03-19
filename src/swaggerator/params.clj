@@ -1,9 +1,7 @@
 (ns swaggerator.params
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
-            [clj-msgpack.core :as mp]
             [clojure.tools.reader.edn :as edn])
-  (:import [org.msgpack MessagePack])
   (:use [swaggerator util]))
 
 ; thanks: https://github.com/mmcgrana/ring-json-params/blob/master/src/ring/middleware/json_params.clj
@@ -39,23 +37,6 @@
             req* (assoc req
                    :non-query-params (merge (or (:non-query-params req) {}) yaml-params)
                    :params (merge (:params req) yaml-params))]
-        (handler req*))
-      (handler req))))
-
-(defn- msgpack-request? [req]
-  (if-let [#^String type (:content-type req)]
-    (not (empty? (re-find #"^application/(vnd.+)?(x-)?msgpack" type)))))
-
-(defn wrap-msgpack-params
-  "Ring middleware that parses MessagePack, updates :params and
-  :non-query-params with received data."
-  [handler]
-  (fn [req]
-    (if-let [body (and (msgpack-request? req) (:body req))]
-      (let [msgpack-params (first (map mp/unwrap (.createUnpacker (MessagePack.) body)))
-            req* (assoc req
-                   :non-query-params (merge (or (:non-query-params req) {}) msgpack-params)
-                   :params (merge (:params req) msgpack-params))]
         (handler req*))
       (handler req))))
 

@@ -1,6 +1,7 @@
 (ns swaggerator.handlers-spec
   (:use [speclj core]
-        [swaggerator handlers json]))
+        [swaggerator json]
+        [swaggerator.handlers core json edn yaml hal cj]))
 
 (defn wrap-handler-test [handler]
   (fn [ctx] "hello"))
@@ -41,19 +42,6 @@
 
   (it "does not touch non-yaml requests"
     (let [h (-> identity wrap-handler-yaml)
-          ctx {:representation {:media-type "text/plain"}}]
-      (should= (h ctx) ctx))))
-
-(describe "wrap-handler-msgpack"
-  (it "outputs msgpack for msgpack requests"
-    (let [h (-> identity wrap-handler-msgpack)
-          ctx {:representation {:media-type "application/x-msgpack"}
-               :data-key :things
-               :things {:a 1}}]
-      (should= (map int (slurp (:body (h ctx)))) [65533 65533 58 97 1])))
-
-  (it "does not touch non-msgpack requests"
-    (let [h (-> identity wrap-handler-msgpack)
           ctx {:representation {:media-type "text/plain"}}]
       (should= (h ctx) ctx))))
 

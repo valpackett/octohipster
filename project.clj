@@ -10,7 +10,6 @@
                  [liberator "0.8.0"]
                  [cheshire "5.0.2"]
                  [clj-yaml "0.4.0"]
-                 [clj-msgpack "0.2.0"]
                  [inflections "0.8.0"]
                  [com.github.fge/json-schema-validator "1.99.9"]
                  [com.damnhandy/handy-uri-templates "1.1.7"]]
