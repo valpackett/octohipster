@@ -12,6 +12,7 @@
                :data-key :things
                :things {:a 1}}]
       (should= (:body (h ctx)) "{\"a\":1}")))
+
   (it "does not touch non-json requests"
     (let [h (-> identity wrap-handler-json)
           ctx {:representation {:media-type "text/plain"}}]
@@ -24,6 +25,7 @@
                :data-key :things
                :things {:a 1}}]
       (should= (:body (h ctx)) "{:a 1}")))
+
   (it "does not touch non-edn requests"
     (let [h (-> identity wrap-handler-edn)
           ctx {:representation {:media-type "text/plain"}}]
@@ -36,6 +38,7 @@
                :data-key :things
                :things {:a 1}}]
       (should= (:body (h ctx)) "{a: 1}\n")))
+
   (it "does not touch non-yaml requests"
     (let [h (-> identity wrap-handler-yaml)
           ctx {:representation {:media-type "text/plain"}}]
@@ -48,6 +51,7 @@
                :data-key :things
                :things {:a 1}}]
       (should= (map int (slurp (:body (h ctx)))) [65533 65533 58 97 1])))
+
   (it "does not touch non-msgpack requests"
     (let [h (-> identity wrap-handler-msgpack)
           ctx {:representation {:media-type "text/plain"}}]
@@ -91,6 +95,34 @@
 
   (it "does not touch non-hal+json requests"
     (let [h (-> identity wrap-handler-hal-json)
+          ctx {:representation {:media-type "application/json"}}]
+      (should= (h ctx) ctx))))
+
+(describe "wrap-handler-collection-json"
+  (it "consumes links for collection+json requests, to the item if data is a map"
+    (let [h (-> identity wrap-handler-collection-json)
+          ctx {:representation {:media-type "application/vnd.collection+json"}
+               :links [{:rel "test", :href "/hello"}]
+               :data-key :things
+               :things {:a 1}}
+          ctx2 (assoc ctx :things [{:a 1}])]
+      (should= (-> ctx h :body unjsonify :collection :items first :links)
+               [{:rel "test", :href "/hello"}])
+      (should= (-> ctx2 h :body unjsonify :collection :links)
+               [{:rel "test", :href "/hello"}])))
+
+  (it "converts nested maps into collection+json format"
+    (let [h (-> identity wrap-handler-collection-json)
+          ctx {:representation {:media-type "application/vnd.collection+json"}
+               :data-key :things
+               :things {:hello {:world 1}}}]
+      (should= (-> ctx h :body unjsonify :collection :items first :data)
+               [{:name "hello"
+                 :value [{:name "world"
+                          :value 1}]}])))
+
+  (it "does not touch non-collection+json requests"
+    (let [h (-> identity wrap-handler-collection-json)
           ctx {:representation {:media-type "application/json"}}]
       (should= (h ctx) ctx))))
 

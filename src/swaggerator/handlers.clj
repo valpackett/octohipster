@@ -110,18 +110,22 @@
         (let [rsp (handler ctx)
               dk (:data-key rsp)
               result (dk rsp)
+              links (-> rsp response-links-and-templates links-as-map)
               result (if (map? result)
                        (hal-embedify ctx result)
                        {:_embedded {dk (map (partial hal-embedify ctx) (map (partial add-self-hal-link ctx dk) result))}})]
-          {:body (jsonify (assoc result :_links (links-as-map rsp)))})
+          {:body (jsonify (assoc result :_links links))})
       (handler ctx))))
 
 (defn add-self-cj-link [ctx dk x]
   (assoc x :href (self-link ctx dk x)))
 
+(defn- cj-wrap-1 [[k v]]
+  {:name k, :value (if (map? v) (mapv cj-wrap-1 v) v)})
+
 (defn cj-wrap [ctx dk m]
   {:href (un-dotdot (str (or (-> ctx :request :context) "") (self-link ctx dk m)))
-   :data (mapv (fn [[k v]] {:name k, :value v}) m)})
+   :data (mapv cj-wrap-1 m)})
 
 (defn wrap-handler-collection-json
   "Wraps handler with a Collection+JSON handler. Note: consumes links;
@@ -132,14 +136,16 @@
     (case (-> ctx :representation :media-type)
       "application/vnd.collection+json"
         (let [rsp (handler ctx)
-              links (links-as-map rsp)
+              links (response-links-and-templates rsp)
               dk (:data-key rsp)
               result (dk rsp)
               items (if (map? result)
                       [(-> (cj-wrap ctx dk result)
                            (assoc :links (-> links
+                                             links-as-map
                                              (dissoc "self")
-                                             (dissoc "listing")))
+                                             (dissoc "listing")
+                                             links-as-seq))
                            (assoc :href (:href (get links "self"))))]
                       (map (partial cj-wrap ctx dk) result))
               coll {:version "1.0"

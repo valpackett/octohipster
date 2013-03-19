@@ -8,8 +8,14 @@
 (defn prepend-to-href [uri-context l]
   (assoc l :href (un-dotdot (str uri-context (:href l)))))
 
-(defn links-as-map [rsp]
+(defn response-links-and-templates [rsp]
+  (concatv
+    (:links rsp)
+    (map #(assoc % :templated true) (:link-templates rsp))))
+
+(defn links-as-map [l]
   (into {}
-    (concatv
-      (map (fn [x] [(:rel x) (-> x (dissoc :rel))]) (:links rsp))
-      (map (fn [x] [(:rel x) (-> x (dissoc :rel) (assoc :templated true))]) (:link-templates rsp)))))
+    (map (fn [x] [(:rel x) (-> x (dissoc :rel))]) l)))
+
+(defn links-as-seq [l]
+  (mapv (fn [[k v]] (assoc v :rel k)) l))
