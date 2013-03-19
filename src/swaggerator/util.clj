@@ -55,6 +55,14 @@
          (str "?" qs)
          "")))
 
+(defn params-rel
+  "Returns a function that expands a URI Template for a specified rel with request params,
+  suitable for use as the :see-other parameter in a resource."
+  [rel]
+  (fn [ctx]
+    (let [tpl (uri-template-for-rel ctx rel)]
+      (expand-uri-template tpl (-> ctx :request :params)))))
+
 (defn wrap-handle-options-and-head
   "Ring middleware that takes care of OPTIONS and HEAD requests."
   [handler]
@@ -76,3 +84,11 @@
                     {"Access-Control-Allow-Origin" "*"
                      "Access-Control-Allow-Headers" "Accept, Authorization, Content-Type"
                      "Access-Control-Allow-Methods" "GET, HEAD, POST, DELETE, PUT"})))))
+
+; https://groups.google.com/d/msg/clojure-dev/9ctJC-LXNps/JwqpqzkgPyIJ
+(defn apply-kw
+  "Like apply, but f takes keyword arguments and the last argument is
+  not a seq but a map with the arguments for f"
+  [f & args]
+  {:pre [(map? (last args))]}
+  (apply f (apply concat (butlast args) (last args))))

@@ -1,4 +1,4 @@
-(defproject org.clojars.myfreeweb.swaggerator/swaggerator "0.1.2-SNAPSHOT"
+(defproject org.clojars.myfreeweb.swaggerator/swaggerator "0.2.0-SNAPSHOT"
   :description "A REST API framework with Swagger support"
   :url "https://github.com/myfreeweb/swaggerator"
   :license {:name "Apache License 2.0"
@@ -6,8 +6,8 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.reader "0.7.0"]
                  [ring/ring-core "1.2.0-beta1"]
-                 [compojure "1.1.5"]
                  [liberator "0.8.0"]
+                 [clout "1.1.0"]
                  [cheshire "5.0.2"]
                  [clj-yaml "0.4.0"]
                  [inflections "0.8.0"]

@@ -1,7 +1,7 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[swaggerator "0.1.2-SNAPSHOT"]
+[swaggerator "0.2.0-SNAPSHOT"]
 ```
 
 # swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png?branch=master)](https://travis-ci.org/myfreeweb/swaggerator)
@@ -14,11 +14,10 @@ A REST framework for Clojure that allows you to easily build high performance we
 - have pagination
 - are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware.
 
-Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberator) and [Compojure](https://github.com/weavejester/compojure).
+Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberator).
 
 ## Usage
 
-- For an example, see [src/example.clj](https://github.com/myfreeweb/swaggerator/blob/master/src/example.clj); run with `lein run -m example`
 - [API Documentation](http://myfreeweb.github.com/swaggerator) is available
 
 ## License

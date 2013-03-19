@@ -1,123 +1,57 @@
 (ns swaggerator.core-spec
-  (:require [cheshire.core :as json])
   (:use [speclj core]
         [ring.mock request]
         [swaggerator core]))
 
-(def thing-schema
-  {:id "Thing"
-   :properties {:name {:type "string"}}
-   :required [:name]})
+(describe "resource"
+  (it "applies mixins"
+    (defn test-mixin [m] (assoc m :b 2))
+    (should= {:a 1, :b 2, :mixins [test-mixin]}
+             (resource :a 1
+                       :mixins [test-mixin]))))
 
-(defcontroller things "/things"
-  "Operations about things"
-  (route "/:name" [name]
-    (entry-resource "Operations with individual things"
-      :schema thing-schema
-      :doc {:get {:nickname "getThing"
-                  :responseClass "Thing"
-                  :summary "Get the thing"
-                  :notes "Notes"
-                  :parameters [{:name "name"
-                                :description "Name"
-                                :dataType "string"
-                                :required true
-                                :paramType "path"}]}}
-      :data-key :data
-      :exists? (fn [ctx] {:data 1})
-      :presenter (fn [data] {:data data})))
-  (route "/" []
-    (listing-resource "Operations with all the things"
-      :schema thing-schema
-      :children-key :things
-      :child-url-template "/things/{name}"
-      :count (constantly 1)
-      :default-per-page 4)))
+(describe "defresource"
+  (it "adds the id"
+    (defresource aaa :a 1)
+    (should= {:a 1 :id ::aaa} aaa)))
 
-(defroutes app-routes
-  [things])
+(describe "controller"
+  (it "adds stuff to resources"
+    (should= {:resources [{:a 1, :global 0}
+                          {:a 2, :global 0}]}
+             (controller :resources [{:a 1} {:a 2}]
+                         :add-to-resources {:global 0}))))
 
-(describe "swaggerator"
-  (it "nests controllers"
-    (let [x (-> (request :get "/things/something")
-                (header "Accept" "application/json")
-                app-routes :body)]
-      (should= x "{\"data\":1}")))
+(describe "routes"
+  (it "assembles the ring handler"
+    (let [rsrc {:url "/:name", :handle-ok (fn [ctx] (str "Hello " (-> ctx :request :route-params :name)))}
+          cntr {:url "/hello", :resources [rsrc]}
+          r (routes :controllers [cntr])]
+      (should= "Hello me"
+               (-> (request :get "/hello/me") r :body))))
 
-  (it "outputs the resource listing"
-    (let [x (-> (request :get "/api-docs.json") app-routes :body (json/parse-string true))]
-      (should= x {:swaggerVersion "1.1"
-                  :basePath "http://localhost"
-                  :apis [{:path "/api-docs.json/things"
-                          :description "Operations about things"}]})))
+  (it "replaces clinks"
+    (defresource clwhat
+      :url "/what")
+    (defresource clhome
+      :url "/home"
+      :clinks {:wat ::clwhat}
+      :handle-ok (fn [ctx] (last (first ((-> ctx :resource :clinks))))))
+    (defcontroller clone
+      :url "/one"
+      :resources [clhome])
+    (defcontroller cltwo
+      :url "/two"
+      :resources [clwhat])
+    (defroutes clsite :controllers [clone cltwo])
+    (should= "/two/what"
+             (-> (request :get "/one/home") clsite :body)))
 
-  (it "outputs api declarations"
-    (let [x (-> (request :get "/api-docs.json/things") app-routes :body (json/parse-string true))]
-      (should= (:models x)
-               {:Thing {:id "Thing"
-                        :properties {:name {:type "string"}}
-                        :required ["name"]}})
-      (should= (:apis x)
-               [{:path "/things/{name}"
-                 :description "Operations with individual things"
-                 :operations [{:httpMethod "GET"
-                               :nickname "getThing"
-                               :summary "Get the thing"
-                               :notes "Notes"
-                               :responseClass "Thing"
-                               :produces ["application/edn" "application/yaml"
-                                          "application/x-yaml" "text/yaml" "text/x-yaml"
-                                          "application/hal+json"
-                                          "application/vnd.collection+json" "application/json"]
-                               :errorResponses [{:code 422
-                                                 :reason "The data did not pass schema validation"}
-                                                {:code 404
-                                                 :reason "Resource not found"}]
-                               :parameters [{:name "name"
-                                             :description "Name"
-                                             :dataType "string"
-                                             :required true
-                                             :paramType "path"}]}]}
-                {:path "/things/"
-                 :description "Operations with all the things"
-                 :operations []}])
-      (should= (:resourcePath x) "/things")))
-
-  (it "uses json schema for validation"
-    (let [x (-> (request :put "/things/something")
-                (content-type "application/json")
-                (body (json/generate-string {:name 1}))
-                app-routes)]
-      (should= 422 (:status x))
-      (should= "integer" (-> x :body json/parse-string first (get "found"))))
-    (let [x (-> (request :put "/things/something")
-                (content-type "application/json")
-                (body (json/generate-string {:name "str"}))
-                app-routes)]
-      (should= 200 (:status x))))
-
-  (it "outputs the raw json schema"
-    (let [x (-> (request :get "/things.schema") app-routes)
-          b (-> x :body (json/parse-string true))]
-      (should= (-> x :headers (get "Content-Type")) "application/schema+json;charset=UTF-8")
-      (should= (:id b) "Thing")))
-
-  (it "links to the raw json schema"
-    (let [x (-> (request :get "/things/something")
-                (header "Accept" "application/json")
-                app-routes)]
-      (should= (-> x :headers (get "Link")) "</things.schema#>; rel=\"describedBy\", </things/something>; rel=\"self\"")))
-
-  (it "outputs the schema for hal"
-    (let [x (-> (request :get "/all.schema")
-                (content-type "application/hal+json")
-                app-routes :body (json/parse-string true))]
-      (should= (keys x) [:_links :Thing])))
-
-  (it "outputs the root for hal"
-    (let [x (-> (request :get "/")
-                (content-type "application/hal+json")
-                app-routes :body (json/parse-string true))]
-      (should= (:_links x) {:self {:href "/"}
-                            :things {:href "/things" :title "Operations about things"}})
-      (should= (-> x :_embedded :schema keys) [:_links :Thing]))))
+  (it "wraps with middleware"
+    (defresource mwhello
+      :url "/what"
+      :middleware [(fn [handler] (fn [req] (handler (assoc req :from-middleware "hi"))))]
+      :handle-ok (fn [ctx] (-> ctx :request :from-middleware)))
+    (defroutes mwsite :controllers [{:url "", :resources [mwhello]}])
+    (should= "hi"
+             (-> (request :get "/what") mwsite :body))))
