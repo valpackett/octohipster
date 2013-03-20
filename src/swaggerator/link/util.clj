@@ -19,3 +19,17 @@
 
 (defn links-as-seq [l]
   (mapv (fn [[k v]] (assoc v :rel k)) l))
+
+(defn clinks-as-map [l]
+  (->> l
+       (apply concat)
+       (apply hash-map)
+       (map (fn [[k v]] [k {:href v}]))))
+
+(defn params-rel
+  "Returns a function that expands a URI Template for a specified rel with request params,
+  suitable for use as the :see-other parameter in a resource."
+  [rel]
+  (fn [ctx]
+    (let [tpl (uri-template-for-rel {:link-templates (links-as-seq (clinks-as-map ((:clinks (:resource ctx)))))} rel)]
+      (expand-uri-template tpl (-> ctx :request :params)))))

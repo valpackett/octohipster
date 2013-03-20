@@ -1,7 +1,7 @@
 (ns swaggerator.handlers-spec
   (:use [speclj core]
         [swaggerator json]
-        [swaggerator.handlers core json edn yaml hal cj]))
+        [swaggerator.handlers core util json edn yaml hal cj]))
 
 (defn wrap-handler-test [handler]
   (fn [ctx] "hello"))
@@ -56,27 +56,29 @@
                 :a 1})))
 
   (it "creates an _embedded wrapper for non-map content and adds templated self links"
-    (let [h (-> identity wrap-handler-hal-json)
+    (let [h (-> identity wrap-handler-hal-json (wrap-handler-add-clink :entry true))
           ctx {:representation {:media-type "application/hal+json"}
                ; liberator does this constantly thing
-               :resource {:link-mapping (constantly {:things "things"})
-                          :link-templates (constantly [{:rel "things" :href "/things/{a}"}])}
+               :resource {:clinks (constantly {:entry "/things/{a}"})
+                          :item-key (constantly :entry)}
                :data-key :things
                :things [{:a 1}]}]
       (should= (unjsonify (:body (h ctx)))
-               {:_links {}
+               {:_links {:entry {:templated true
+                                 :href "/things/{a}"}}
                 :_embedded {:things [{:a 1
                                       :_links {:self {:href "/things/1"}}}]}})))
 
   (it "creates an _embedded wrapper for embed-mapping"
-    (let [h (-> identity wrap-handler-hal-json)
+    (let [h (-> identity wrap-handler-hal-json (wrap-handler-add-clink :thing true))
           ctx {:representation {:media-type "application/hal+json"}
                :resource {:embed-mapping (constantly {:things "thing"})
-                          :link-templates (constantly [{:rel "thing" :href "/yo/{a}/things/{b}"}])}
+                          :clinks (constantly {:thing "/yo/{a}/things/{b}"})}
                :data-key :yo
                :yo {:a 1 :things [{:b 2}]}}]
       (should= (unjsonify (:body (h ctx)))
-               {:_links {}
+               {:_links {:thing {:templated true
+                                 :href "/yo/{a}/things/{b}"}}
                 :_embedded {:things [{:b 2
                                       :_links {:self {:href "/yo/1/things/2"}}}]}
                 :a 1})))
@@ -114,14 +116,14 @@
           ctx {:representation {:media-type "application/json"}}]
       (should= (h ctx) ctx))))
 
-(describe "entry-handler"
+(describe "item-handler"
   (it "uses the presenter on the data"
-    (let [h (entry-handler (partial + 1) :data)]
+    (let [h (item-handler (partial + 1) :data)]
       (should= (h {:data 1}) {:data-key :data
                               :data 2}))))
 
-(describe "list-handler"
+(describe "collection-handler"
   (it "maps the presenter over the data"
-    (let [h (list-handler (partial + 1) :data)]
+    (let [h (collection-handler (partial + 1) :data)]
       (should= (h {:data [1 2]}) {:data-key :data
                                   :data [2 3]}))))

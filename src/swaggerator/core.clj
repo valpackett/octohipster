@@ -8,10 +8,7 @@
         [swaggerator.link header]
         [swaggerator params host util]))
 
-(defn resource [& body]
-  (let [r (apply hash-map body)
-        r (reduce #(%2 %1) r (or (:mixins r) []))]
-    r))
+(defn resource [& body] (apply hash-map body))
 
 (defmacro defresource [n & body]
   `(def ~n (resource ~@body :id ~(keyword (str *ns* "/" n)))))
@@ -20,7 +17,8 @@
   (let [c (apply hash-map body)
         c (-> c
               (assoc :resources
-                     (map (partial merge (:add-to-resources c)) (:resources c)))
+                     (map (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
+                                (partial merge (:add-to-resources c))) (:resources c)))
               (dissoc :add-to-resources))]
     c))
 
@@ -59,7 +57,7 @@
                         [k (->> resources (filter #(= v (:id %))) first :url)])
                       (:clinks r)))
               gen-resource
-              (assoc :route (clout/route-compile (str (:url c) (:url r))))
+              (assoc :route (-> (str (:url c) (:url r)) uri-template->clout clout/route-compile))
               (dissoc :url)))
         (:resources c)))))
 

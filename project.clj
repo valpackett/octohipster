@@ -5,6 +5,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.reader "0.7.0"]
+                 [swiss-arrows "0.5.1"]
                  [ring/ring-core "1.2.0-beta1"]
                  [liberator "0.8.0"]
                  [clout "1.1.0"]

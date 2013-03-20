@@ -23,13 +23,13 @@
   (str (or (:path-info req) (:uri req)) (alter-query-params req x)))
 
 (defn uri-template-for-rel [ctx rel]
-  (-> (filter #(= (:rel %) rel) (or ((-> ctx :resource :link-templates)) []))
+  (-> (filter #(= (:rel %) rel) (or (-> ctx :link-templates) []))
       first
       :href))
 
-(defn clout->uri-template
-  "Turns a Clout route into an RFC 6570 URI Template, eg. /things/:name -> /things/{name}"
-  [x] (string/replace x #":([^/]+)" "{$1}"))
+(defn uri-template->clout
+  "Turns a URI Template into a Clout route, eg. /things/{name} -> /things/:name"
+  [x] (string/replace x #"\{([^\}]+)\}" ":$1"))
 
 (defn expand-uri-template
   "Expands an RFC 6570 URI Template with a map of arguments."
@@ -54,14 +54,6 @@
        (if-let [qs (:query-string req)]
          (str "?" qs)
          "")))
-
-(defn params-rel
-  "Returns a function that expands a URI Template for a specified rel with request params,
-  suitable for use as the :see-other parameter in a resource."
-  [rel]
-  (fn [ctx]
-    (let [tpl (uri-template-for-rel ctx rel)]
-      (expand-uri-template tpl (-> ctx :request :params)))))
 
 (defn wrap-handle-options-and-head
   "Ring middleware that takes care of OPTIONS and HEAD requests."

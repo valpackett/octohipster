@@ -3,13 +3,6 @@
         [ring.mock request]
         [swaggerator core]))
 
-(describe "resource"
-  (it "applies mixins"
-    (defn test-mixin [m] (assoc m :b 2))
-    (should= {:a 1, :b 2, :mixins [test-mixin]}
-             (resource :a 1
-                       :mixins [test-mixin]))))
-
 (describe "defresource"
   (it "adds the id"
     (defresource aaa :a 1)
@@ -20,11 +13,16 @@
     (should= {:resources [{:a 1, :global 0}
                           {:a 2, :global 0}]}
              (controller :resources [{:a 1} {:a 2}]
-                         :add-to-resources {:global 0}))))
+                         :add-to-resources {:global 0})))
+
+  (it "applies mixins to resources"
+    (should= {:resources [{:a 1, :b 2, :c 2}]}
+             (controller :resources [{:a 1, :mixins [#(assoc % :b (:c %))]}]
+                         :add-to-resources {:c 2}))))
 
 (describe "routes"
   (it "assembles the ring handler"
-    (let [rsrc {:url "/:name", :handle-ok (fn [ctx] (str "Hello " (-> ctx :request :route-params :name)))}
+    (let [rsrc {:url "/{name}", :handle-ok (fn [ctx] (str "Hello " (-> ctx :request :route-params :name)))}
           cntr {:url "/hello", :resources [rsrc]}
           r (routes :controllers [cntr])]
       (should= "Hello me"

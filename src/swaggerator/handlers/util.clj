@@ -16,14 +16,19 @@
   wrap-handler-*, not wrap-*." 
   (:use [swaggerator util]))
 
-(def ^:dynamic *handled-content-types* (atom []))
-
 (defn resp-with-links [ctx b]
   {:links (:links ctx)
    :link-templates (:link-templates ctx)
    :body b})
 
-(defn self-link [ctx dk x]
-  (when-let [lm (-> ctx :resource :link-mapping)]
-    (when-let [tpl (uri-template-for-rel ctx (dk (lm)))]
-      (expand-uri-template tpl x))))
+(defn self-link [ctx rel x]
+  (when-let [tpl (uri-template-for-rel ctx rel)]
+    (expand-uri-template tpl x)))
+
+(defn wrap-handler-add-clink [handler r templated]
+  (fn [ctx]
+    (-> ctx
+        (update-in [(if templated :link-templates :links)] conj
+                   {:rel (name r)
+                    :href (r (apply hash-map (apply concat ((:clinks (:resource ctx))))))})
+        handler)))
