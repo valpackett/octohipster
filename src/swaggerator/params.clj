@@ -1,7 +1,7 @@
 (ns swaggerator.params
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
-            [clojure.tools.reader.edn :as edn])
+            [clojure.edn :as edn])
   (:use [swaggerator util]))
 
 ; thanks: https://github.com/mmcgrana/ring-json-params/blob/master/src/ring/middleware/json_params.clj

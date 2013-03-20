@@ -8,7 +8,6 @@
 (defresource test-coll
   :mixins [collection-resource]
   :link-to-item ::test-item
-  :url ""
   :data-key :things
   :exists? (fn [ctx] {:things [{:name "a"} {:name "b"}]})
   :post! (fn [ctx] (->> ctx :request :non-query-params (reset! post-bin)))
