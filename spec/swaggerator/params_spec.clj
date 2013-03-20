@@ -1,40 +1,43 @@
 (ns swaggerator.params-spec
   (:use [speclj core]
         [ring.mock request]
-        [swaggerator params]))
+        [swaggerator.params core json yaml edn]))
 
 (defn app [req] (select-keys req [:non-query-params :params]))
 
-(describe "wrap-json-params"
+(describe "json-params"
   (it "appends params to :non-query-params and :params"
     (should= {:non-query-params {:a 1}
               :params {:a 1}}
-             ((-> app wrap-json-params)
+             ((wrap-params-formats app [json-params])
               (-> (request :post "/")
                   (content-type "application/json")
                   (body "{\"a\":1}"))))))
 
-(describe "wrap-yaml-params"
+(describe "yaml-params"
   (it "appends params to :non-query-params and :params"
     (doseq [ctype ["application/yaml" "application/x-yaml"
                    "text/yaml" "text/x-yaml"]]
       (should= {:non-query-params {:a 1}
                 :params {:a 1}}
-               ((-> app wrap-yaml-params)
-                (-> (request :post "/") (content-type ctype) (body "{a: 1}")))))))
+               ((wrap-params-formats app [yaml-params])
+                (-> (request :post "/")
+                    (content-type ctype)
+                    (body "{a: 1}")))))))
 
-(describe "wrap-edn-params"
+(describe "edn-params"
   (it "appends params to :non-query-params and :params"
     (should= {:non-query-params {:a 1}
               :params {:a 1}}
-             ((-> app wrap-edn-params)
+             ((wrap-params-formats app [edn-params])
               (-> (request :post "/")
                   (content-type "application/edn")
                   (body "{:a 1}")))))
+
   (it "does not evaluate clojure"
     (should= {:non-query-params {:a '(+ 1 2)}
               :params {:a '(+ 1 2)}}
-             ((-> app wrap-edn-params)
+             ((wrap-params-formats app [edn-params])
               (-> (request :post "/")
                   (content-type "application/edn")
                   (body "{:a (+ 1 2)}"))))))

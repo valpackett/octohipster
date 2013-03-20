@@ -47,10 +47,10 @@
     (let [rsp (-> (request :post "/test")
                   (header "Accept" "application/json")
                   (content-type "application/json")
-                  (body "{\"name\":1}")
+                  (body "{\"name\":\"1\"}")
                   test-app)]
       (should= "/test/1" (-> rsp :headers (get "Location")))
-      (should= {:name 1} @post-bin))))
+      (should= {:name "1"} @post-bin))))
 
 (describe "item-resource"
   (it "outputs data using the presenter and handlers"

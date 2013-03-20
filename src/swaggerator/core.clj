@@ -6,7 +6,8 @@
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
         [swaggerator.link header]
-        [swaggerator params host util]))
+        [swaggerator.params core json edn yaml]
+        [swaggerator host util]))
 
 (defn resource [& body] (apply hash-map body))
 
@@ -30,8 +31,6 @@
       wrap-link-header
       wrap-host-bind
       wrap-cors
-      wrap-json-params
-      wrap-edn-params
       wrap-keyword-params
       wrap-nested-params
       wrap-params))
@@ -68,18 +67,21 @@
 
 (defn routes [& body]
   (let [defaults {:not-found-handler not-found-handler
+                  :params [json-params yaml-params edn-params]
                   :controllers []}
         a (merge defaults (apply hash-map body))
         ctrs (map (partial gen-controller (all-resources (:controllers a)))
                   (:controllers a))
-        rts (apply concat (map :resources ctrs))]
-    (fn [req]
-      (let [h (->> rts
-                   (map #(assoc % :match (clout/route-matches (:route %) req)))
-                   (filter :match)
-                   first)
-            h (or h {:handler (:not-found-handler a)})]
-        ((:handler h) (assoc req :route-params (:match h)))))))
+        rts (apply concat (map :resources ctrs))
+        h (fn [req]
+            (let [h (->> rts
+                         (map #(assoc % :match (clout/route-matches (:route %) req)))
+                         (filter :match)
+                         first)
+                  h (or h {:handler (:not-found-handler a)})]
+              ((:handler h) (assoc req :route-params (:match h)))))]
+    (-> h
+        (wrap-params-formats (:params a)))))
 
 (defmacro defroutes [n & body]
   `(def ~n (routes ~@body)))
