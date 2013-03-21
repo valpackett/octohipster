@@ -65,23 +65,27 @@
    :headers {"Content-Type" "application/json"}
    :body "{\"error\":\"Not found\"}"})
 
+(defn- gen-controllers [c]
+  (map (partial gen-controller (all-resources c)) c))
+
+(defn- gen-handler [resources not-found-handler]
+  (fn [req]
+    (let [h (->> resources
+                 (map #(assoc % :match (clout/route-matches (:route %) req)))
+                 (filter :match)
+                 first)
+          h (or h {:handler not-found-handler})]
+      ((:handler h) (assoc req :route-params (:match h))))))
+
 (defn routes [& body]
   (let [defaults {:not-found-handler not-found-handler
                   :params [json-params yaml-params edn-params]
                   :controllers []}
-        a (merge defaults (apply hash-map body))
-        ctrs (map (partial gen-controller (all-resources (:controllers a)))
-                  (:controllers a))
-        rts (apply concat (map :resources ctrs))
-        h (fn [req]
-            (let [h (->> rts
-                         (map #(assoc % :match (clout/route-matches (:route %) req)))
-                         (filter :match)
-                         first)
-                  h (or h {:handler (:not-found-handler a)})]
-              ((:handler h) (assoc req :route-params (:match h)))))]
-    (-> h
-        (wrap-params-formats (:params a)))))
+        options (merge defaults (apply hash-map body))
+        controllers (gen-controllers (:controllers options))
+        resources (apply concat (map :resources controllers))]
+    (-> (gen-handler resources (:not-found-handler options))
+        (wrap-params-formats (:params options)))))
 
 (defmacro defroutes [n & body]
   `(def ~n (routes ~@body)))
