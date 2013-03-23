@@ -9,12 +9,19 @@
         [swaggerator.params core json edn yaml]
         [swaggerator host util]))
 
-(defn resource [& body] (apply hash-map body))
+(defn resource
+  "Creates a resource. Basically, compiles a map from arguments."
+  [& body] (apply hash-map body))
 
-(defmacro defresource [n & body]
-  `(def ~n (resource ~@body :id ~(keyword (str *ns* "/" n)))))
+(defmacro defresource
+  "Creates a resource and defines a var with it,
+  adding the var under :id as a namespace-qualified keyword."
+  [n & body] `(def ~n (resource ~@body :id ~(keyword (str *ns* "/" n)))))
 
-(defn controller [& body]
+(defn controller
+  "Creates a controller, adding everything from :add-to-resources to all
+  resources and applying mixins to them."
+  [& body]
   (let [c (apply hash-map body)
         c (-> c
               (assoc :resources
@@ -23,8 +30,9 @@
               (dissoc :add-to-resources))]
     c))
 
-(defmacro defcontroller [n & body]
-  `(def ~n (controller ~@body)))
+(defmacro defcontroller
+  "Creates a controller and defines a var with it."
+  [n & body] `(def ~n (controller ~@body)))
 
 (defn- wrap-all-the-things [handler]
   (-> handler
@@ -82,7 +90,10 @@
        (gen-controller (:controllers options))
        :resources first))
 
-(defn routes [& body]
+(defn routes
+  "Creates a Ring handler that routes requests to provided controllers
+  and documenters, using params handers and not-found-handler."
+  [& body]
   (let [defaults {:not-found-handler not-found-handler
                   :params [json-params yaml-params edn-params]
                   :documenters []
@@ -99,5 +110,6 @@
     (-> (gen-handler resources (:not-found-handler options))
         (wrap-params-formats (:params options)))))
 
-(defmacro defroutes [n & body]
-  `(def ~n (routes ~@body)))
+(defmacro defroutes
+  "Creates a Ring handler (see routes) and defines a var with it."
+  [n & body] `(def ~n (routes ~@body)))

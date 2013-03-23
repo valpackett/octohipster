@@ -22,7 +22,12 @@
         (assoc :available-media-types
                (apply concat (map (comp :ctypes meta) (:handlers r)))))))
 
-(defn item-resource [r]
+(defn item-resource
+  "Mixin that includes all boilerplate for working with single items:
+   - validation (using JSON schema in :schema for PUT requests)
+   - format handling
+   - linking to the item's collection"
+  [r]
   (let [r (merge {:method-allowed? (lib/request-method-in :get :put :delete)
                   :collection-key :collection
                   :respond-with-entity? true
@@ -34,7 +39,13 @@
         validated-resource
         (handled-resource item-handler :collection-key false))))
 
-(defn collection-resource [r]
+(defn collection-resource
+  "Mixin that includes all boilerplate for working with collections of items:
+   - validation (using JSON schema in :schema for POST requests)
+   - format handling
+   - linking to the individual items
+   - pagination"
+  [r]
   (let [r (merge {:method-allowed? (lib/request-method-in :get :post)
                   :data-key :data
                   :item-key :item
