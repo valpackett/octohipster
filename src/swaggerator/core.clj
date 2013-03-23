@@ -77,13 +77,25 @@
           h (or h {:handler not-found-handler})]
       ((:handler h) (assoc req :route-params (:match h))))))
 
+(defn- gen-doc-resource [options d]
+  (->> (controller :url "", :resources [(d options)])
+       (gen-controller (:controllers options))
+       :resources first))
+
 (defn routes [& body]
   (let [defaults {:not-found-handler not-found-handler
                   :params [json-params yaml-params edn-params]
+                  :documenters []
                   :controllers []}
         options (merge defaults (apply hash-map body))
-        controllers (gen-controllers (:controllers options))
-        resources (apply concat (map :resources controllers))]
+        resources (apply concat (map :resources (gen-controllers (:controllers options))))
+        raw-resources (apply concat (map :resources (:controllers options)))
+        options-for-doc (-> options
+                            (dissoc :documenters)
+                            (assoc :resources raw-resources))
+        resources (concat resources
+                          (map (partial gen-doc-resource options-for-doc)
+                               (:documenters options)))]
     (-> (gen-handler resources (:not-found-handler options))
         (wrap-params-formats (:params options)))))
 

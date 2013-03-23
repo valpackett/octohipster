@@ -1,7 +1,7 @@
 (ns swaggerator.core-spec
   (:use [speclj core]
         [ring.mock request]
-        [swaggerator core]))
+        [swaggerator core mixins json]))
 
 (describe "defresource"
   (it "adds the id"
@@ -52,4 +52,17 @@
       :handle-ok (fn [ctx] (-> ctx :request :from-middleware)))
     (defroutes mwsite :controllers [{:url "", :resources [mwhello]}])
     (should= "hi"
-             (-> (request :get "/what") mwsite :body))))
+             (-> (request :get "/what") mwsite :body)))
+
+  (it "calls documenters"
+    (defn dcdocumenter [options]
+      (resource
+        :url "/test-doc"
+        :handle-ok (fn [ctx] (jsonify {:things (map (fn [r] {:url (:url r)}) (:resources options))}))))
+    (defresource dchello
+      :url "/what")
+    (defroutes dcsite
+      :controllers [{:url "", :resources [dchello]}]
+      :documenters [dcdocumenter])
+    (should= {:things [{:url "/what"}]}
+             (-> (request :get "/test-doc") dcsite :body unjsonify))))
