@@ -1,5 +1,5 @@
 (ns swaggerator.mixins-spec
-  (:use [swaggerator mixins core json]
+  (:use [swaggerator mixins core routes json]
         [ring.mock request]
         [speclj core]))
 
@@ -35,7 +35,8 @@
                   (header "Accept" "application/hal+json")
                   test-app)]
       (should= {:_links {:item {:href "/test/{name}"
-                                :templated true}}
+                                :templated true}
+                         :self {:href "/test"}}
                 :_embedded {:things [{:_links {:self {:href "/test/a"}}
                                       :name "a"}
                                      {:_links {:self {:href "/test/b"}}
@@ -57,6 +58,7 @@
     (let [rsp (-> (request :get "/test/hello")
                   (header "Accept" "application/hal+json")
                   test-app)]
-      (should= {:_links {:collection {:href "/test"}}
+      (should= {:_links {:collection {:href "/test"}
+                         :self {:href "/test/hello"}}
                 :name "hello"}
                (unjsonify (:body rsp))))))

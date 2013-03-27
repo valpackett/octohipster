@@ -5,8 +5,7 @@
             [clout.core :as clout]
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
-        [swaggerator.link header]
-        [swaggerator.params core json edn yaml]
+        [swaggerator.link header middleware]
         [swaggerator host util]))
 
 (defn resource
@@ -36,6 +35,7 @@
 
 (defn- wrap-all-the-things [handler]
   (-> handler
+      wrap-add-self-link
       wrap-link-header
       wrap-host-bind
       wrap-cors
@@ -43,17 +43,17 @@
       wrap-nested-params
       wrap-params))
 
-(defn- gen-resource [r]
+(defn gen-resource [r]
   {:url (:url r)
    :handler (reduce #(%2 %1)
                     (apply-kw lib/resource r)
                     (conj (:middleware r) wrap-all-the-things))})
 
-(defn- all-resources [cs]
+(defn all-resources [cs]
   (apply concat
     (map (fn [c] (map #(assoc % :url (str (:url c) (:url %))) (:resources c))) cs)))
 
-(defn- gen-controller [resources c]
+(defn gen-controller [resources c]
   (-> c
     (assoc :resources
       (mapv
@@ -73,10 +73,10 @@
    :headers {"Content-Type" "application/json"}
    :body "{\"error\":\"Not found\"}"})
 
-(defn- gen-controllers [c]
+(defn gen-controllers [c]
   (map (partial gen-controller (all-resources c)) c))
 
-(defn- gen-handler [resources not-found-handler]
+(defn gen-handler [resources not-found-handler]
   (fn [req]
     (let [h (->> resources
                  (map #(assoc % :match (clout/route-matches (:route %) req)))
@@ -85,31 +85,7 @@
           h (or h {:handler not-found-handler})]
       ((:handler h) (assoc req :route-params (:match h))))))
 
-(defn- gen-doc-resource [options d]
+(defn gen-doc-resource [options d]
   (->> (controller :url "", :resources [(d options)])
        (gen-controller (:controllers options))
        :resources first))
-
-(defn routes
-  "Creates a Ring handler that routes requests to provided controllers
-  and documenters, using params handers and not-found-handler."
-  [& body]
-  (let [defaults {:not-found-handler not-found-handler
-                  :params [json-params yaml-params edn-params]
-                  :documenters []
-                  :controllers []}
-        options (merge defaults (apply hash-map body))
-        resources (apply concat (map :resources (gen-controllers (:controllers options))))
-        raw-resources (apply concat (map :resources (:controllers options)))
-        options-for-doc (-> options
-                            (dissoc :documenters)
-                            (assoc :resources raw-resources))
-        resources (concat resources
-                          (map (partial gen-doc-resource options-for-doc)
-                               (:documenters options)))]
-    (-> (gen-handler resources (:not-found-handler options))
-        (wrap-params-formats (:params options)))))
-
-(defmacro defroutes
-  "Creates a Ring handler (see routes) and defines a var with it."
-  [n & body] `(def ~n (routes ~@body)))

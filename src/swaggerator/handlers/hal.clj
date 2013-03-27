@@ -38,10 +38,11 @@
                 ik (if-let [from-ctx (-> ctx :resource :item-key)]
                      (from-ctx)
                      :item)
-                result (if (map? result)
-                         (embedify ctx result)
-                         {:_embedded {dk (map (partial embedify ctx)
-                                              (map (partial add-self-link ctx (name ik))
-                                                   result))}})]
+                result (cond
+                         (map? result) (embedify ctx result)
+                         (nil? result) {:_embedded (:_embedded rsp)}
+                         :else {:_embedded {dk (map (partial embedify ctx)
+                                                    (map (partial add-self-link ctx (name ik))
+                                                         result))}})]
             {:body (jsonify (assoc result :_links links))})
         (handler ctx)))))

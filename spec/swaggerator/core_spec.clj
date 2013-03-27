@@ -1,7 +1,7 @@
 (ns swaggerator.core-spec
   (:use [speclj core]
         [ring.mock request]
-        [swaggerator core mixins json]))
+        [swaggerator core routes mixins json]))
 
 (describe "defresource"
   (it "adds the id"

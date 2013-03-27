@@ -8,19 +8,24 @@
 (defn validated-resource [r]
   (update-in r [:middleware] conj #(wrap-json-schema-validator % (:schema r))))
 
-(defn handled-resource [r handler rel-key clink-templated]
-  (let [r (merge {:handlers [wrap-handler-json wrap-handler-edn wrap-handler-yaml
-                             wrap-handler-hal-json wrap-handler-collection-json]
-                  :presenter identity}
-                 r)
-        h (-<> (handler (:presenter r) (:data-key r))
-               (reduce #(%2 %1) <> (:handlers r))
-               (wrap-handler-add-clink (rel-key r) clink-templated)
-               wrap-default-handler)]
-    (-> r
-        (assoc :handle-ok h)
-        (assoc :available-media-types
-               (apply concat (map (comp :ctypes meta) (:handlers r)))))))
+(defn handled-resource
+  ([r] (handled-resource r item-handler))
+  ([r handler] (handled-resource r handler nil nil))
+  ([r handler rel-key clink-templated]
+   (let [r (merge {:handlers [wrap-handler-json wrap-handler-edn wrap-handler-yaml
+                              wrap-handler-hal-json wrap-handler-collection-json]
+                   :data-key :data
+                   :presenter identity}
+                  r)
+         cl-wrapper (if rel-key #(wrap-handler-add-clink % (rel-key r) clink-templated) identity)
+         h (-<> (handler (:presenter r) (:data-key r))
+                (reduce #(%2 %1) <> (:handlers r))
+                cl-wrapper
+                wrap-default-handler)]
+     (-> r
+         (assoc :handle-ok h)
+         (assoc :available-media-types
+                (apply concat (map (comp :ctypes meta) (:handlers r))))))))
 
 (defn item-resource
   "Mixin that includes all boilerplate for working with single items:
