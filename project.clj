@@ -16,12 +16,10 @@
   :profiles {:dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
                                   [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]
                                   [http-kit "2.0.0-RC4"           :exclusions [org.clojure/clojure]]
-                                  [ring-ratelimit "0.1.0"         :exclusions [org.clojure/clojure]]
                                   [ring-mock "0.1.3"              :exclusions [org.clojure/clojure]]]}}
   :plugins [[speclj "2.5.0"]
             [codox "0.6.4"]
             [lein-release "1.0.0"]]
-  :aliases {"all" ["with-profile" "dev:dev,1.5"]}
   :bootclasspath true
   :lein-release {:deploy-via :lein-deploy}
   :repositories [["snapshots" {:url "https://clojars.org/repo" :creds :gpg}]
