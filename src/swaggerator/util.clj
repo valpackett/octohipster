@@ -36,7 +36,7 @@
   [tpl x]
   (let [tpl ^UriTemplate (UriTemplate/fromTemplate ^String tpl)]
     (doseq [[k v] x]
-      (.set tpl (name k) v))
+      (.set tpl (name k) (str v)))
     (.expand tpl)))
 
 (defn context-relative-uri

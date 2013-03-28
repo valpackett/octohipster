@@ -9,7 +9,8 @@ Current [semantic](http://semver.org/) version:
 A REST framework for Clojure that allows you to easily build high performance web APIs that:
 
 - support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html), [Collection+JSON](http://amundsen.com/media-types/collection/) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
-- have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation
+- have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation (*not
+  available for now due to epic refactoring*)
 - use [JSON Schema](http://json-schema.org) for validation *and* documentation
 - have pagination
 - are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware.
@@ -17,6 +18,76 @@ A REST framework for Clojure that allows you to easily build high performance we
 Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberator).
 
 ## Usage
+
+```clojure
+(ns example
+  (:use [swaggerator core routes mixins pagination]
+        org.httpkit.server)
+  (:import org.bson.types.ObjectId)
+  (:require [monger.core :as mg]
+            [monger.query :as mq]
+            [monger.collection :as mc]
+            monger.json))
+
+(mg/connect!)
+(mg/set-db! (mg/get-db "swaggerator-example"))
+
+(def contact-schema
+  {:id "Contact"
+   :type "object"
+   :properties {:name {:type "string"}
+                :phone {:type "integer"}}
+   :required [:name]})
+
+(defn contacts-count []
+  (mc/count "contacts"))
+(defn contacts-all []
+  (mq/with-collection "contacts"
+    (mq/find {})
+    (mq/skip *skip*)
+    (mq/limit *limit*)))
+(defn contacts-find-by-id [x]
+  (mc/find-map-by-id "contacts" (ObjectId. x)))
+(defn contacts-insert! [x]
+  (mc/insert "contacts" (assoc x :_id (ObjectId.))))
+(defn contacts-update! [x old]
+  (mc/update "contacts" old x :multi false))
+(defn contacts-delete! [x]
+  (mc/remove "contacts" x))
+
+(defresource contact-collection
+  :mixins [collection-resource]
+  :link-to-item ::contact-item
+  :data-key :contacts
+  :exists? (fn [ctx] {:contacts (contacts-all)})
+  :post! (fn [ctx] (-> ctx :request :non-query-params contacts-insert!))
+  :count (fn [req] (contacts-count)))
+
+(defresource contact-item
+  :mixins [item-resource]
+  :url "/{_id}"
+  :link-to-collection ::contact-collection
+  :data-key :contact
+  :exists? (fn [ctx]
+             (if-let [doc (-> ctx :request :route-params :_id contacts-find-by-id)]
+               {:contact doc}))
+  :put! (fn [ctx]
+          (-> ctx :request :non-query-params (contacts-update! (:contact ctx)))
+          {:contact (-> ctx :request :route-params :_id contacts-find-by-id)})
+  :delete! (fn [ctx]
+             (-> ctx :contact contacts-delete!)
+             {:contact nil}))
+
+(defgroup contact-group
+  :url "/contacts"
+  :add-to-resources {:schema contact-schema}
+  :resources [contact-collection contact-item])
+
+(defroutes site
+  :groups [contact-group])
+
+(run-server site {:port 8080})
+```
 
 - [API Documentation](http://myfreeweb.github.com/swaggerator) is available
 
