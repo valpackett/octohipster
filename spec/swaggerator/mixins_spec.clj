@@ -20,14 +20,14 @@
   :data-key :thing
   :exists? (fn [ctx] {:thing {:name (-> ctx :request :route-params :name)}}))
 
-(defcontroller test-ctrl
+(defgroup test-ctrl
   :url "/test"
   :add-to-resources {:schema {:id "Test"
                               :properties {:name {:type "string"}}}}
   :resources [test-coll test-item])
 
 (defroutes test-app
-  :controllers [test-ctrl])
+  :groups [test-ctrl])
 
 (describe "collection-resource"
   (it "outputs data using the presenter and handlers"

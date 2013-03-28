@@ -1,6 +1,6 @@
 (ns swaggerator.core
   "Functions and macros for building REST APIs through
-  creating resources, controllers and routes."
+  creating resources, groups and routes."
   (:require [liberator.core :as lib]
             [clout.core :as clout]
             [clojure.string :as string])
@@ -17,8 +17,8 @@
   adding the var under :id as a namespace-qualified keyword."
   [n & body] `(def ~n (resource ~@body :id ~(keyword (str *ns* "/" n)))))
 
-(defn controller
-  "Creates a controller, adding everything from :add-to-resources to all
+(defn group
+  "Creates a group, adding everything from :add-to-resources to all
   resources and applying mixins to them."
   [& body]
   (let [c (apply hash-map body)
@@ -29,9 +29,9 @@
               (dissoc :add-to-resources))]
     c))
 
-(defmacro defcontroller
-  "Creates a controller and defines a var with it."
-  [n & body] `(def ~n (controller ~@body)))
+(defmacro defgroup
+  "Creates a group and defines a var with it."
+  [n & body] `(def ~n (group ~@body)))
 
 (defn- wrap-all-the-things [handler]
   (-> handler
@@ -53,7 +53,7 @@
   (apply concat
     (map (fn [c] (map #(assoc % :url (str (:url c) (:url %))) (:resources c))) cs)))
 
-(defn gen-controller [resources c]
+(defn gen-group [resources c]
   (-> c
     (assoc :resources
       (mapv
@@ -73,8 +73,8 @@
    :headers {"Content-Type" "application/json"}
    :body "{\"error\":\"Not found\"}"})
 
-(defn gen-controllers [c]
-  (map (partial gen-controller (all-resources c)) c))
+(defn gen-groups [c]
+  (map (partial gen-group (all-resources c)) c))
 
 (defn gen-handler [resources not-found-handler]
   (fn [req]
@@ -86,6 +86,6 @@
       ((:handler h) (assoc req :route-params (:match h))))))
 
 (defn gen-doc-resource [options d]
-  (->> (controller :url "", :resources [(d options)])
-       (gen-controller (:controllers options))
+  (->> (group :url "", :resources [(d options)])
+       (gen-group (:groups options))
        :resources first))

@@ -4,16 +4,16 @@
         [swaggerator core]))
 
 (defn routes
-  "Creates a Ring handler that routes requests to provided controllers
+  "Creates a Ring handler that routes requests to provided groups
   and documenters, using params handers and not-found-handler."
   [& body]
   (let [defaults {:not-found-handler not-found-handler
                   :params [json-params yaml-params edn-params]
                   :documenters [schema-doc schema-root-doc]
-                  :controllers []}
+                  :groups []}
         options (merge defaults (apply hash-map body))
-        resources (apply concat (map :resources (gen-controllers (:controllers options))))
-        raw-resources (apply concat (map :resources (:controllers options)))
+        resources (apply concat (map :resources (gen-groups (:groups options))))
+        raw-resources (apply concat (map :resources (:groups options)))
         options-for-doc (-> options
                             (dissoc :documenters)
                             (assoc :resources raw-resources))

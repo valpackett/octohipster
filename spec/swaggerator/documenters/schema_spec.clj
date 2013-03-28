@@ -11,12 +11,12 @@
 
 (defresource contact-collection)
 (defresource contact-entry :url "/{id}")
-(defcontroller contact-controller
+(defgroup contact-group
   :url "/contacts"
   :add-to-resources {:schema contact-schema}
   :resources [contact-collection contact-entry])
 (defroutes site
-  :controllers [contact-controller]
+  :groups [contact-group]
   :documenters [schema-doc schema-root-doc])
 
 (describe "schema-doc"
@@ -28,7 +28,7 @@
                  site :body unjsonify))))
 
 (describe "schema-root-doc"
-  (it "exposes schemas and controllers at /"
+  (it "exposes schemas and groups at /"
     (should= {:_links {:self {:href "/"}
                        :contacts {:href "/contacts"}}
               :_embedded {:schema {:_links {:self {:href "/schema"}}

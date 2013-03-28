@@ -17,8 +17,8 @@
     :mixins [handled-resource]
     :exists? (fn [ctx] {:data (schema-from-options options)})))
 
-(defn- links-for-controllers [options]
-  (->> options :controllers
+(defn- links-for-groups [options]
+  (->> options :groups
        (map :url)
        (map (fn [c] {:rel (string/replace c "/" "") :href c}))))
 
@@ -27,5 +27,5 @@
     :url "/"
     :mixins [handled-resource]
     :exists? (fn [ctx]
-               {:links (links-for-controllers options)
+               {:links (links-for-groups options)
                 :_embedded {:schema (assoc (schema-from-options options) :_links {:self {:href "/schema"}})}})))
