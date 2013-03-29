@@ -56,7 +56,7 @@
                 :a 1})))
 
   (it "creates an _embedded wrapper for non-map content and adds templated self links"
-    (let [h (-> identity wrap-handler-hal-json (wrap-handler-add-clink :entry true))
+    (let [h (-> identity wrap-handler-hal-json wrap-handler-add-clinks)
           ctx {:representation {:media-type "application/hal+json"}
                ; liberator does this constantly thing
                :resource {:clinks (constantly {:entry "/things/{a}"})
@@ -70,7 +70,7 @@
                                       :_links {:self {:href "/things/1"}}}]}})))
 
   (it "creates an _embedded wrapper for embed-mapping"
-    (let [h (-> identity wrap-handler-hal-json (wrap-handler-add-clink :thing true))
+    (let [h (-> identity wrap-handler-hal-json wrap-handler-add-clinks)
           ctx {:representation {:media-type "application/hal+json"}
                :resource {:embed-mapping (constantly {:things "thing"})
                           :clinks (constantly {:thing "/yo/{a}/things/{b}"})}

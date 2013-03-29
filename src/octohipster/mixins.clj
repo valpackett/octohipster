@@ -10,17 +10,15 @@
 
 (defn handled-resource
   ([r] (handled-resource r item-handler))
-  ([r handler] (handled-resource r handler nil nil))
-  ([r handler rel-key clink-templated]
+  ([r handler]
    (let [r (merge {:handlers [wrap-handler-json wrap-handler-edn wrap-handler-yaml
                               wrap-handler-hal-json wrap-handler-collection-json]
                    :data-key :data
                    :presenter identity}
                   r)
-         cl-wrapper (if rel-key #(wrap-handler-add-clink % (rel-key r) clink-templated) identity)
          h (-<> (handler (:presenter r) (:data-key r))
                 (reduce #(%2 %1) <> (:handlers r))
-                cl-wrapper
+                (wrap-handler-add-clinks)
                 wrap-default-handler)]
      (-> r
          (assoc :handle-ok h)
@@ -40,9 +38,8 @@
                   :can-put-to-missing? false}
                  r)]
     (-> r
-        (update-in [:clinks] assoc :collection (:link-to-collection r))
         validated-resource
-        (handled-resource item-handler :collection-key false))))
+        (handled-resource item-handler))))
 
 (defn collection-resource
   "Mixin that includes all boilerplate for working with collections of items:
@@ -59,9 +56,8 @@
                  r)]
     (-> r
         (assoc :see-other (params-rel (:item-key r)))
-        (update-in [:clinks] assoc :item (:link-to-item r))
         (update-in [:middleware] conj
                    #(wrap-pagination % {:counter (:count r)
                                         :default-per-page (:default-per-page r)}))
         validated-resource
-        (handled-resource collection-handler :item-key true))))
+        (handled-resource collection-handler))))

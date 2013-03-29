@@ -9,20 +9,10 @@
         (update-in [:link-templates] concatv (-> ctx :request :link-templates))
         handler)))
 
-(defn wrap-handler-context-relative-links [handler]
-  (fn [ctx]
-    (let [uri-context (or (-> ctx :request :context) "")
-          prepender (partial prepend-to-href uri-context)]
-      (-> ctx
-          (assoc :links (map prepender (:links ctx)))
-          (assoc :link-templates (map prepender (:link-templates ctx)))
-          handler))))
-
 (defn wrap-default-handler
   "Wraps a handler with default data transformers"
   [handler]
   (-> handler
-      wrap-handler-context-relative-links
       wrap-handler-request-links))
 
 (defn collection-handler

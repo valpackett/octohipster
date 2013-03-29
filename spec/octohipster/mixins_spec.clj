@@ -7,7 +7,7 @@
 
 (defresource test-coll
   :mixins [collection-resource]
-  :link-to-item ::test-item
+  :clinks {:item ::test-item}
   :data-key :things
   :exists? (fn [ctx] {:things [{:name "a"} {:name "b"}]})
   :post! (fn [ctx] (->> ctx :request :non-query-params (reset! post-bin)))
@@ -15,7 +15,7 @@
 
 (defresource test-item
   :mixins [item-resource]
-  :link-to-collection ::test-coll
+  :clinks {:collection ::test-coll}
   :url "/{name}"
   :data-key :thing
   :exists? (fn [ctx] {:thing {:name (-> ctx :request :route-params :name)}}))

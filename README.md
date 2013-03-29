@@ -57,7 +57,7 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 
 (defresource contact-collection
   :mixins [collection-resource]
-  :link-to-item ::contact-item
+  :clinks {:item ::contact-item}
   :data-key :contacts
   :exists? (fn [ctx] {:contacts (contacts-all)})
   :post! (fn [ctx] (-> ctx :request :non-query-params contacts-insert!))
@@ -66,7 +66,7 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 (defresource contact-item
   :mixins [item-resource]
   :url "/{_id}"
-  :link-to-collection ::contact-collection
+  :clinks {:collection ::contact-collection}
   :data-key :contact
   :exists? (fn [ctx]
              (if-let [doc (-> ctx :request :route-params :_id contacts-find-by-id)]

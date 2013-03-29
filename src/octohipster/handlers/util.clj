@@ -25,10 +25,18 @@
   (when-let [tpl (uri-template-for-rel ctx rel)]
     (expand-uri-template tpl x)))
 
-(defn wrap-handler-add-clink [handler r templated]
+(defn templated? [[k v]]
+  (.contains v "{"))
+
+(defn expand-clinks [x]
+  (map (fn [[k v]] {:rel (name k), :href v}) x))
+
+(defn wrap-handler-add-clinks [handler]
   (fn [ctx]
-    (-> ctx
-        (update-in [(if templated :link-templates :links)] conj
-                   {:rel (name r)
-                    :href (r (apply hash-map (apply concat ((:clinks (:resource ctx))))))})
-        handler)))
+    (let [clinks (apply hash-map (apply concat ((:clinks (:resource ctx)))))
+          links  (expand-clinks (filter (complement templated?) clinks))
+          tpls   (expand-clinks (filter templated? clinks))]
+      (-> ctx
+          (update-in [:links] concat links)
+          (update-in [:link-templates] concat tpls)
+          handler))))
