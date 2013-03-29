@@ -31,12 +31,17 @@
 (defn expand-clinks [x]
   (map (fn [[k v]] {:rel (name k), :href v}) x))
 
+(def process-clinks
+  (memoize
+    (fn [clinks]
+      (let [clinks (apply hash-map (apply concat clinks))]
+        [(expand-clinks (filter (complement templated?) clinks))
+         (expand-clinks (filter templated? clinks))]))))
+
 (defn wrap-handler-add-clinks [handler]
   (fn [ctx]
-    (let [clinks (apply hash-map (apply concat ((:clinks (:resource ctx)))))
-          links  (expand-clinks (filter (complement templated?) clinks))
-          tpls   (expand-clinks (filter templated? clinks))]
+    (let [clinks (process-clinks ((:clinks (:resource ctx))))]
       (-> ctx
-          (update-in [:links] concat links)
-          (update-in [:link-templates] concat tpls)
+          (update-in [:links] concat (first clinks))
+          (update-in [:link-templates] concat (last clinks))
           handler))))
