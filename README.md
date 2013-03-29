@@ -1,10 +1,10 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[swaggerator "0.2.0-SNAPSHOT"]
+[octohipster "0.2.0-SNAPSHOT"]
 ```
 
-# swaggerator [![Build Status](https://travis-ci.org/myfreeweb/swaggerator.png?branch=master)](https://travis-ci.org/myfreeweb/swaggerator)
+# octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster)
 
 A REST framework for Clojure that allows you to easily build high performance web APIs that:
 
@@ -15,13 +15,13 @@ A REST framework for Clojure that allows you to easily build high performance we
 - have pagination
 - are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware.
 
-Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberator).
+Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberator).
 
 ## Usage
 
 ```clojure
 (ns example
-  (:use [swaggerator core routes mixins pagination]
+  (:use [octohipster core routes mixins pagination]
         org.httpkit.server)
   (:import org.bson.types.ObjectId)
   (:require [monger.core :as mg]
@@ -30,7 +30,7 @@ Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberat
             monger.json))
 
 (mg/connect!)
-(mg/set-db! (mg/get-db "swaggerator-example"))
+(mg/set-db! (mg/get-db "octohipster-example"))
 
 (def contact-schema
   {:id "Contact"
@@ -89,7 +89,7 @@ Swaggerator is based on [Liberator](https://github.com/clojure-liberator/liberat
 (run-server site {:port 8080})
 ```
 
-- [API Documentation](http://myfreeweb.github.com/swaggerator) is available
+- [API Documentation](http://myfreeweb.github.com/octohipster) is available
 
 ## License
 
