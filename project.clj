@@ -1,4 +1,4 @@
-(defproject octohipster "0.2.0-SNAPSHOT"
+(defproject octohipster "0.2.0"
   :description "A hypermedia REST HTTP API library for Clojure"
   :url "https://github.com/myfreeweb/octohipster"
   :license {:name "Apache License 2.0"
