@@ -1,7 +1,7 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[octohipster "0.2.0-SNAPSHOT"]
+[octohipster "0.2.0"]
 ```
 
 # octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster)
