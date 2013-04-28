@@ -47,7 +47,7 @@
   {:url (:url r)
    :handler (reduce #(%2 %1)
                     (apply-kw lib/resource r)
-                    (conj (:middleware r) wrap-all-the-things))})
+                    (concat (:middleware r) [wrap-all-the-things]))})
 
 (defn all-resources [cs]
   (apply concat
