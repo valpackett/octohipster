@@ -52,6 +52,7 @@
                   :data-key :data
                   :item-key :item
                   :post-redirect? true
+                  :is-multiple? true
                   :default-per-page 25}
                  r)]
     (-> r
