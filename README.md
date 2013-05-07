@@ -1,7 +1,7 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[octohipster "0.2.0"]
+[octohipster "0.2.1-SNAPSHOT"]
 ```
 
 # octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster)
@@ -21,6 +21,7 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 ```clojure
 (ns example
   (:use [octohipster core routes mixins pagination]
+        [octohipster.documenters swagger schema]
         org.httpkit.server)
   (:import org.bson.types.ObjectId)
   (:require [monger.core :as mg]
@@ -83,7 +84,8 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
   :resources [contact-collection contact-item])
 
 (defroutes site
-  :groups [contact-group])
+  :groups [contact-group]
+  :documenters [schema-doc schema-root-doc swagger-doc swagger-root-doc])
 
 (run-server site {:port 8080})
 ```
