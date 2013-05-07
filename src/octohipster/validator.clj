@@ -1,7 +1,7 @@
 (ns octohipster.validator
   (:import [com.github.fge.jsonschema.main JsonValidator JsonSchemaFactory]
-           [com.github.fge.jsonschema.util JsonLoader]
            [com.github.fge.jsonschema.report ProcessingReport]
+           [com.github.fge.jackson JsonLoader]
            [com.fasterxml.jackson.core JsonFactory]
            [com.fasterxml.jackson.databind JsonNode ObjectMapper]
            [java.io StringWriter])

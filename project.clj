@@ -4,20 +4,20 @@
   :license {:name "Apache License 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [swiss-arrows "0.5.1"]
-                 [ring/ring-core "1.2.0-beta1"]
+                 [swiss-arrows "0.6.0"]
+                 [ring/ring-core "1.2.0-beta2"]
                  [liberator "0.8.0"]
                  [clout "1.1.0"]
-                 [cheshire "5.0.2"]
+                 [cheshire "5.1.1"]
                  [clj-yaml "0.4.0"]
                  [inflections "0.8.0"]
-                 [com.github.fge/json-schema-validator "1.99.9"]
+                 [com.github.fge/json-schema-validator "2.1.3"]
                  [com.damnhandy/handy-uri-templates "1.1.7"]]
-  :profiles {:dev {:dependencies [[speclj "2.5.0"                 :exclusions [org.clojure/clojure]]
+  :profiles {:dev {:dependencies [[speclj "2.6.1"                 :exclusions [org.clojure/clojure]]
                                   [com.novemberain/monger "1.4.2" :exclusions [org.clojure/clojure]]
-                                  [http-kit "2.0.0-RC4"           :exclusions [org.clojure/clojure]]
+                                  [http-kit "2.0.1"               :exclusions [org.clojure/clojure]]
                                   [ring-mock "0.1.3"              :exclusions [org.clojure/clojure]]]}}
-  :plugins [[speclj "2.5.0"]
+  :plugins [[speclj "2.6.1"]
             [codox "0.6.4"]
             [lein-release "1.0.0"]]
   :bootclasspath true
