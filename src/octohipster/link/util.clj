@@ -27,9 +27,13 @@
        (map (fn [[k v]] [k {:href v}]))))
 
 (defn params-rel
-  "Returns a function that expands a URI Template for a specified rel with request params,
+  "Returns a function that expands a URI Template for a specified rel
+  with request params and the item (determined by :item-key) added in post!,
   suitable for use as the :see-other parameter in a resource."
   [rel]
   (fn [ctx]
-    (let [tpl (uri-template-for-rel {:link-templates (links-as-seq (clinks-as-map ((:clinks (:resource ctx)))))} rel)]
-      (expand-uri-template tpl (-> ctx :request :params)))))
+    (let [tpl (uri-template-for-rel {:link-templates (links-as-seq (clinks-as-map ((:clinks (:resource ctx)))))} rel)
+          req (:request ctx)
+          item-key ((-> ctx :resource :item-key))
+          vars (merge (:params req) (item-key ctx))]
+      (expand-uri-template tpl vars))))

@@ -49,23 +49,43 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 (defn contacts-find-by-id [x]
   (mc/find-map-by-id "contacts" (ObjectId. x)))
 (defn contacts-insert! [x]
-  (mc/insert "contacts" (assoc x :_id (ObjectId.))))
+  (let [id (ObjectId.)]
+    (mc/insert "contacts" (assoc x :_id id))
+    (mc/find-map-by-id "contacts" id)))
 (defn contacts-update! [x old]
   (mc/update "contacts" old x :multi false))
 (defn contacts-delete! [x]
   (mc/remove "contacts" x))
 
+(def name-param
+  {:name "name"
+   :dataType "string"
+   :paramType "path"
+   :required "true"
+   :description "The name of the contact"
+   :allowMultiple false})
+
+(def body-param
+  {:dataType "Contact"
+   :paramType "body"
+   :required true
+   :allowMultiple false})
+
 (defresource contact-collection
+  :desc "Operations with multiple contacts"
   :mixins [collection-resource]
   :clinks {:item ::contact-item}
   :data-key :contacts
   :exists? (fn [ctx] {:contacts (contacts-all)})
-  :post! (fn [ctx] (-> ctx :request :non-query-params contacts-insert!))
-  :count (fn [req] (contacts-count)))
+  :post! (fn [ctx] {:item (-> ctx :request :non-query-params contacts-insert!)})
+  :count (fn [req] (contacts-count))
+  :doc {:get {:nickname "getContacts", :summary "Get all contacts"}
+        :post {:nickname "createContact", :summary "Create a contact"}})
 
 (defresource contact-item
-  :mixins [item-resource]
+  :desc "Operations with individual contacts"
   :url "/{_id}"
+  :mixins [item-resource]
   :clinks {:collection ::contact-collection}
   :data-key :contact
   :exists? (fn [ctx]
@@ -76,7 +96,10 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
           {:contact (-> ctx :request :route-params :_id contacts-find-by-id)})
   :delete! (fn [ctx]
              (-> ctx :contact contacts-delete!)
-             {:contact nil}))
+             {:contact nil})
+  :doc {:get {:nickname "getContact", :summary "Get a contact", :parameters [name-param]}
+        :put {:nickname "updateContact", :summary "Overwrite a contact", :parameters [name-param body-param]}
+        :delete {:nickname "deleteContact", :summary "Delete a contact", :parameters [name-param]}})
 
 (defgroup contact-group
   :url "/contacts"
@@ -87,7 +110,8 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
   :groups [contact-group]
   :documenters [schema-doc schema-root-doc swagger-doc swagger-root-doc])
 
-(run-server site {:port 8080})
+(defn -main []
+  (run-server site {:port 8080}))
 ```
 
 - [API Documentation](http://myfreeweb.github.com/octohipster) is available

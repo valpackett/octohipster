@@ -27,11 +27,10 @@
   :mixins [collection-resource]
   :desc "Operations with multiple contacts"
   :doc {:get {:nickname "getContacts"
-              :summary "Get all contacts"
-              :parameters [name-param]}
+              :summary "Get all contacts"}
         :post {:nickname "createContact"
                :summary "Create a contact"
-               :parameters [name-param body-param]}})
+               :parameters [body-param]}})
 
 (defresource contact-item
   :mixins [item-resource]
@@ -68,13 +67,12 @@
                       :operations [{:httpMethod "GET"
                                     :nickname "getContacts"
                                     :summary "Get all contacts"
-                                    :responseClass "Array[Contact]"
-                                    :parameters [name-param]}
+                                    :responseClass "Array[Contact]"}
                                    {:httpMethod "POST"
                                     :nickname "createContact"
                                     :summary "Create a contact"
                                     :responseClass "Contact"
-                                    :parameters [name-param body-param]}]}
+                                    :parameters [body-param]}]}
                      {:path "/contacts/{id}"
                       :description "Operations with individual contacts"
                       :operations [{:httpMethod "GET"
