@@ -23,26 +23,22 @@
                    mapping)))))
     x))
 
-(def wrap-handler-hal-json
+(defhandler wrap-handler-hal-json
   "Wraps handler with a HAL+JSON handler. Note: consumes links;
   requires wrapping the Ring handler with octohipster.handlers/wrap-hal-json."
-  ^{:ctypes ["application/hal+json"]}
-  (fn [handler]
-    (fn [ctx]
-      (case (-> ctx :representation :media-type)
-        "application/hal+json"
-          (let [rsp (handler ctx)
-                dk (:data-key rsp)
-                result (dk rsp)
-                links (-> rsp response-links-and-templates links-as-map)
-                ik (if-let [from-ctx (-> ctx :resource :item-key)]
-                     (from-ctx)
-                     :item)
-                result (cond
-                         (map? result) (embedify ctx result)
-                         (nil? result) {:_embedded (:_embedded rsp)}
-                         :else {:_embedded {dk (map (partial embedify ctx)
-                                                    (map (partial add-self-link ctx (name ik))
-                                                         result))}})]
-            {:body (jsonify (assoc result :_links links))})
-        (handler ctx)))))
+  ["application/hal+json"]
+  (fn [hdlr ctx]
+    (let [rsp (hdlr ctx)
+          dk (:data-key rsp)
+          result (dk rsp)
+          links (-> rsp response-links-and-templates links-as-map)
+          ik (if-let [from-ctx (-> ctx :resource :item-key)]
+               (from-ctx)
+               :item)
+          result (cond
+                   (map? result) (embedify ctx result)
+                   (nil? result) {:_embedded (:_embedded rsp)}
+                   :else {:_embedded {dk (map (partial embedify ctx)
+                                              (map (partial add-self-link ctx (name ik))
+                                                   result))}})]
+      {:body (jsonify (assoc result :_links links))})))

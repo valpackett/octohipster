@@ -45,3 +45,22 @@
           (update-in [:links] concat (first clinks))
           (update-in [:link-templates] concat (last clinks))
           handler))))
+
+(defn handler [ctypes fun]
+  (let [ctypes-set (set ctypes)]
+    (fn [hdlr]
+      (fn [ctx]
+        (if (contains? ctypes-set (-> ctx :representation :media-type))
+          (fun hdlr ctx)
+          (hdlr ctx))))))
+
+(defmacro defhandler "Defines a handler." [n doc ctypes fun]
+  `(def ~n ~doc (with-meta (handler ~ctypes ~fun) {:ctypes ~ctypes})))
+
+(defn data-from-result [result]
+  ((:data-key result) result))
+
+(defn make-handler-fn [f]
+  (fn [hdlr ctx]
+    (->> ctx hdlr data-from-result f
+         (resp-with-links ctx))))
