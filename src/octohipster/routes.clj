@@ -12,16 +12,17 @@
                   :documenters [schema-doc schema-root-doc]
                   :groups []}
         options (merge defaults (apply hash-map body))
-        resources (mapcat :resources (gen-groups (:groups options)))
-        raw-resources (mapcat :resources (:groups options))
-        options-for-doc (-> options
+        {:keys [documenters groups params not-found-handler]} options
+        resources (mapcat :resources (gen-groups groups))
+        raw-resources (mapcat :resources groups)
+        docgen (partial gen-doc-resource
+                        (-> options
                             (dissoc :documenters)
-                            (assoc :resources raw-resources))
-        docgen (partial gen-doc-resource options-for-doc)
+                            (assoc :resources raw-resources)))
         resources (concat resources
-                          (map docgen (:documenters options)))]
-    (-> (gen-handler resources (:not-found-handler options))
-        (wrap-params-formats (:params options)))))
+                          (map docgen documenters))]
+    (-> (gen-handler resources not-found-handler)
+        (wrap-params-formats params))))
 
 (defmacro defroutes
   "Creates a Ring handler (see routes) and defines a var with it."
