@@ -22,13 +22,12 @@
   "Creates a group, adding everything from :add-to-resources to all
   resources and applying mixins to them."
   [& body]
-  (let [c (apply hash-map body)
-        c (-> c
-              (assoc-map :resources
-                     (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
-                           (partial merge (:add-to-resources c))))
-              (dissoc :add-to-resources))]
-    c))
+  (let [c (apply hash-map body)]
+    (-> c
+        (assoc-map :resources
+                   (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
+                         (partial merge (:add-to-resources c))))
+        (dissoc :add-to-resources))))
 
 (defmacro defgroup
   "Creates a group and defines a var with it."

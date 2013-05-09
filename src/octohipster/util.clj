@@ -7,6 +7,8 @@
 
 (defn assoc-map [x k f] (assoc x k (mapv f (k x))))
 
+(defn uri [req] (or (:path-info req) (:uri req)))
+
 (defmacro map-to-querystring
   "Turns a map into a query sting, eg. {:abc 123 :def ' '} -> ?abc=123&def=+."
   [m]
@@ -22,7 +24,7 @@
   (map-to-querystring (merge (:query-params req) x)))
 
 (defn uri-alter-query-params [req x]
-  (str (or (:path-info req) (:uri req)) (alter-query-params req x)))
+  (str (uri req) (alter-query-params req x)))
 
 (defn uri-template-for-rel [ctx rel]
   (-> (filter #(= (:rel %) rel) (or (-> ctx :link-templates) []))
@@ -44,7 +46,7 @@
 (defn context-relative-uri
   "Returns the full context-relative URI of a Ring request (ie. includes the query string)."
   [req]
-  (str (or (:path-info req) (:uri req))
+  (str (uri req)
        (if-let [qs (:query-string req)]
          (str "?" qs)
          "")))
