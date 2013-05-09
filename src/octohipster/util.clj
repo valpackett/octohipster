@@ -5,6 +5,8 @@
 
 (defn concatv [& xs] (into [] (apply concat xs)))
 
+(defn assoc-map [x k f] (assoc x k (mapv f (k x))))
+
 (defmacro map-to-querystring
   "Turns a map into a query sting, eg. {:abc 123 :def ' '} -> ?abc=123&def=+."
   [m]

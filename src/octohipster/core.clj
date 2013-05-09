@@ -24,9 +24,9 @@
   [& body]
   (let [c (apply hash-map body)
         c (-> c
-              (assoc :resources
-                     (map (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
-                                (partial merge (:add-to-resources c))) (:resources c)))
+              (assoc-map :resources
+                     (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
+                           (partial merge (:add-to-resources c))))
               (dissoc :add-to-resources))]
     c))
 
@@ -51,24 +51,23 @@
                     (apply-kw lib/resource r)
                     (concat (:middleware r) [wrap-all-the-things]))})
 
+(defn- make-url-combiner [u]
+  (fn [x] (assoc x :url (str u (:url x)))))
+
 (defn all-resources [cs]
   (apply concat
-    (map (fn [c] (map #(assoc % :url (str (:url c) (:url %))) (:resources c))) cs)))
+    (map #(map (make-url-combiner (:url %)) (:resources %)) cs)))
 
 (defn gen-group [resources c]
-  (-> c
-    (assoc :resources
-      (mapv
-        (fn [r]
-          (-> r
-              (assoc :clinks
-                (mapv (fn [[k v]]
-                        [k (->> resources (filter #(= v (:id %))) first :url)])
-                      (:clinks r)))
-              gen-resource
-              (assoc :route (-> (str (:url c) (:url r)) uri-template->clout clout/route-compile))
-              (dissoc :url)))
-        (:resources c)))))
+  (assoc-map c :resources
+    (fn [r]
+      (-> r
+          (assoc-map :clinks
+                 (fn [[k v]]
+                   [k (->> resources (filter #(= v (:id %))) first :url)]))
+          gen-resource
+          (assoc :route (-> (str (:url c) (:url r)) uri-template->clout clout/route-compile))
+          (dissoc :url)))))
 
 (defn not-found-handler [req]
   {:status 404
@@ -84,8 +83,8 @@
                  (map #(assoc % :match (clout/route-matches (:route %) req)))
                  (filter :match)
                  first)
-          h (or h {:handler not-found-handler})]
-      ((:handler h) (assoc req :route-params (:match h))))))
+          {:keys [handler match]} (or h {:handler not-found-handler})]
+      (handler (assoc req :route-params match)))))
 
 (defn gen-doc-resource [options d]
   (->> (group :url "", :resources [(d options)])
