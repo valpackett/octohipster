@@ -41,4 +41,5 @@
                    :else {:_embedded {dk (map (partial embedify ctx)
                                               (map (partial add-self-link ctx (name ik))
                                                    result))}})]
-      {:body (jsonify (assoc result :_links links))})))
+      {:encoder jsonify
+       :body (assoc result :_links links)})))

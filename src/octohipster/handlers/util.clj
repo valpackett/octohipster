@@ -16,10 +16,11 @@
   wrap-handler-*, not wrap-*." 
   (:use [octohipster util]))
 
-(defn resp-with-links [ctx b]
+(defn resp-with-links [ctx encoder body]
   {:links (:links ctx)
    :link-templates (:link-templates ctx)
-   :body b})
+   :encoder encoder
+   :body body})
 
 (defn self-link [ctx rel x]
   (when-let [tpl (uri-template-for-rel ctx rel)]
@@ -62,5 +63,12 @@
 
 (defn make-handler-fn [f]
   (fn [hdlr ctx]
-    (->> ctx hdlr data-from-result f
-         (resp-with-links ctx))))
+    (->> ctx hdlr data-from-result (resp-with-links ctx f))))
+
+(defn wrap-apply-encoder [handler]
+  ; used as ring middleware in apps, as handler wrapper in unit tests
+  (fn [req]
+    (let [rsp (handler req)]
+      (if-let [enc (:encoder rsp)]
+        (assoc rsp :body ((:encoder rsp) (:body rsp)))
+        rsp))))

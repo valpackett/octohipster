@@ -34,4 +34,5 @@
                         (-> ctx :request :uri))
                 :links (if (map? result) [] links)
                 :items items}]
-      {:body (jsonify {:collection coll})})))
+      {:encoder jsonify
+       :body {:collection coll}})))

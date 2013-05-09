@@ -6,6 +6,7 @@
             [clojure.string :as string])
   (:use [ring.middleware params keyword-params nested-params]
         [octohipster.link header middleware]
+        [octohipster.handlers util]
         [octohipster host util]))
 
 (defn resource
@@ -41,7 +42,8 @@
       wrap-cors
       wrap-keyword-params
       wrap-nested-params
-      wrap-params))
+      wrap-params
+      wrap-apply-encoder))
 
 (defn gen-resource [r]
   {:url (:url r)
