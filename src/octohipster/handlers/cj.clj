@@ -34,5 +34,7 @@
                         (-> ctx :request :uri))
                 :links (if (map? result) [] links)
                 :items items}]
-      {:encoder jsonify
-       :body {:collection coll}})))
+      (-> ctx resp-common
+          (assoc :encoder jsonify)
+          (assoc :body-no-envelope? true)
+          (assoc :body {:collection coll})))))

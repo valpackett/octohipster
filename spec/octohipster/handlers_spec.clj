@@ -1,7 +1,7 @@
 (ns octohipster.handlers-spec
   (:use [speclj core]
         [octohipster json]
-        [octohipster.handlers core util json edn yaml hal cj]))
+        [octohipster.handlers core util json edn yaml hal cj middleware]))
 
 (defn wrap-handler-test [handler]
   (fn [ctx] "hello"))
@@ -127,3 +127,17 @@
     (let [h (collection-handler (partial + 1) :data)]
       (should= (h {:data [1 2]}) {:data-key :data
                                   :data [2 3]}))))
+
+(describe "wrap-response-envelope"
+  (it "creates the envelope"
+    (let [h (-> identity wrap-handler-json wrap-response-envelope wrap-apply-encoder)]
+      (should= (-> {:representation {:media-type "application/json"}
+                    :data-key :things
+                    :things [1 2]} h :body unjsonify)
+               {:things [1 2]})))
+  (it "does not touch non-envelope-able types"
+    (let [h (-> identity wrap-handler-hal-json wrap-response-envelope wrap-apply-encoder)]
+      (should= (-> {:representation {:media-type "application/hal+json"}
+                    :data-key :things
+                    :things {:a 1}} h :body unjsonify)
+               {:a 1, :_links {}}))))
