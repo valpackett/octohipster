@@ -16,8 +16,9 @@
                    :data-key :data
                    :presenter identity}
                   r)
-         h (-<> (handler (:presenter r) (:data-key r))
-                (reduce #(%2 %1) <> (:handlers r))
+         {:keys [presenter data-key handlers]} r
+         h (-<> (handler presenter data-key)
+                (reduce #(%2 %1) <> handlers)
                 (wrap-handler-add-clinks)
                 wrap-default-handler)]
      (-> r
@@ -54,11 +55,12 @@
                   :post-redirect? true
                   :is-multiple? true
                   :default-per-page 25}
-                 r)]
+                 r)
+        {:keys [item-key count default-per-page]} r]
     (-> r
-        (assoc :see-other (params-rel (:item-key r)))
+        (assoc :see-other (params-rel item-key))
         (update-in [:middleware] conj
-                   #(wrap-pagination % {:counter (:count r)
-                                        :default-per-page (:default-per-page r)}))
+                   #(wrap-pagination % {:counter count
+                                        :default-per-page default-per-page}))
         validated-resource
         (handled-resource collection-handler))))

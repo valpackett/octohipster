@@ -33,7 +33,7 @@
   [rel]
   (fn [ctx]
     (let [tpl (uri-template-for-rel {:link-templates (links-as-seq (clinks-as-map ((:clinks (:resource ctx)))))} rel)
-          req (:request ctx)
+          {:keys [params]} (:request ctx)
           item-key ((-> ctx :resource :item-key))
-          vars (merge (:params req) (item-key ctx))]
+          vars (merge params (item-key ctx))]
       (expand-uri-template tpl vars))))
