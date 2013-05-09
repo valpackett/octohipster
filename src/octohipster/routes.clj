@@ -12,14 +12,14 @@
                   :documenters [schema-doc schema-root-doc]
                   :groups []}
         options (merge defaults (apply hash-map body))
-        resources (apply concat (map :resources (gen-groups (:groups options))))
-        raw-resources (apply concat (map :resources (:groups options)))
+        resources (mapcat :resources (gen-groups (:groups options)))
+        raw-resources (mapcat :resources (:groups options))
         options-for-doc (-> options
                             (dissoc :documenters)
                             (assoc :resources raw-resources))
+        docgen (partial gen-doc-resource options-for-doc)
         resources (concat resources
-                          (map (partial gen-doc-resource options-for-doc)
-                               (:documenters options)))]
+                          (map docgen (:documenters options)))]
     (-> (gen-handler resources (:not-found-handler options))
         (wrap-params-formats (:params options)))))
 

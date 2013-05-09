@@ -23,7 +23,7 @@
      (-> r
          (assoc :handle-ok h)
          (assoc :available-media-types
-                (apply concat (map (comp :ctypes meta) (:handlers r))))))))
+                (mapcat (comp :ctypes meta) (:handlers r)))))))
 
 (defn item-resource
   "Mixin that includes all boilerplate for working with single items:

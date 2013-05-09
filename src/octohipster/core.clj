@@ -54,8 +54,7 @@
   (fn [x] (assoc x :url (str u (:url x)))))
 
 (defn all-resources [cs]
-  (apply concat
-    (map #(map (make-url-combiner (:url %)) (:resources %)) cs)))
+  (mapcat #(map (make-url-combiner (:url %)) (:resources %)) cs))
 
 (defn gen-group [resources c]
   (assoc-map c :resources
