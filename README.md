@@ -32,6 +32,8 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 (mg/connect!)
 (mg/set-db! (mg/get-db "octohipster-example"))
 
+;;;; The "model"
+;;;;  tip: make it a separate namespace, eg. app.models.contact
 (def contact-schema
   {:id "Contact"
    :type "object"
@@ -39,37 +41,27 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
                 :phone {:type "integer"}}
    :required [:name]})
 
-(defn contacts-count []
-  (mc/count "contacts"))
+(defn contacts-count [] (mc/count "contacts"))
 (defn contacts-all []
   (mq/with-collection "contacts"
     (mq/find {})
     (mq/skip *skip*)
     (mq/limit *limit*)))
-(defn contacts-find-by-id [x]
-  (mc/find-map-by-id "contacts" (ObjectId. x)))
+(defn contacts-find-by-id [x] (mc/find-map-by-id "contacts" (ObjectId. x)))
 (defn contacts-insert! [x]
   (let [id (ObjectId.)]
     (mc/insert "contacts" (assoc x :_id id))
     (mc/find-map-by-id "contacts" id)))
-(defn contacts-update! [x old]
-  (mc/update "contacts" old x :multi false))
-(defn contacts-delete! [x]
-  (mc/remove "contacts" x))
+(defn contacts-update! [x old] (mc/update "contacts" old x :multi false))
+(defn contacts-delete! [x] (mc/remove "contacts" x))
 
+;;;; The resources
+;; with shared pieces of documentation
 (def name-param
-  {:name "name"
-   :dataType "string"
-   :paramType "path"
-   :required "true"
-   :description "The name of the contact"
-   :allowMultiple false})
+  {:name "name", :dataType "string", :paramType "path", :required "true", :description "The name of the contact", :allowMultiple false})
 
 (def body-param
-  {:dataType "Contact"
-   :paramType "body"
-   :required true
-   :allowMultiple false})
+  {:dataType "Contact", :paramType "body", :required true, :allowMultiple false})
 
 (defresource contact-collection
   :desc "Operations with multiple contacts"
@@ -101,17 +93,18 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
         :put {:nickname "updateContact", :summary "Overwrite a contact", :parameters [name-param body-param]}
         :delete {:nickname "deleteContact", :summary "Delete a contact", :parameters [name-param]}})
 
+;;;; The group
 (defgroup contact-group
   :url "/contacts"
-  :add-to-resources {:schema contact-schema}
+  :add-to-resources {:schema contact-schema}  ; instead of typing the same for all resources in the group
   :resources [contact-collection contact-item])
 
+;;;; The handler
 (defroutes site
   :groups [contact-group]
   :documenters [schema-doc schema-root-doc swagger-doc swagger-root-doc])
 
-(defn -main []
-  (run-server site {:port 8080}))
+(defn -main [] (run-server site {:port 8080}))
 ```
 
 - [API Documentation](http://myfreeweb.github.com/octohipster) is available
