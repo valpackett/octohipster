@@ -2,8 +2,7 @@
   (:require [liberator.core :as lib])
   (:use [octohipster pagination validator util]
         [octohipster.handlers core json edn yaml hal cj util]
-        [octohipster.link util]
-        [swiss-arrows core]))
+        [octohipster.link util]))
 
 (defn validated-resource [r]
   (update-in r [:middleware] conj #(wrap-json-schema-validator % (:schema r))))
@@ -17,10 +16,10 @@
                    :presenter identity}
                   r)
          {:keys [presenter data-key handlers]} r
-         h (-<> (handler presenter data-key)
-                (reduce #(%2 %1) <> handlers)
-                (wrap-handler-add-clinks)
-                wrap-default-handler)]
+         h (-> (handler presenter data-key)
+               (unwrap handlers)
+               (wrap-handler-add-clinks)
+               wrap-default-handler)]
      (-> r
          (assoc :handle-ok h)
          (assoc :available-media-types

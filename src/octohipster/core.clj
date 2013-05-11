@@ -25,7 +25,7 @@
   (let [c (apply hash-map body)]
     (-> c
         (assoc-map :resources
-                   (comp (fn [r] (reduce #(%2 %1) (dissoc r :mixins) (:mixins r)))
+                   (comp (fn [r] (unwrap (dissoc r :mixins) (:mixins r)))
                          (partial merge (:add-to-resources c))))
         (dissoc :add-to-resources))))
 
@@ -46,9 +46,9 @@
 
 (defn gen-resource [r]
   {:url (:url r)
-   :handler (reduce #(%2 %1)
-                    (apply-kw lib/resource r)
-                    (conj (:middleware r) wrap-all-the-things))})
+   :handler (unwrap
+              (apply-kw lib/resource r)
+              (conj (:middleware r) wrap-all-the-things))})
 
 (defn- make-url-combiner [u]
   (fn [x] (assoc x :url (str u (:url x)))))

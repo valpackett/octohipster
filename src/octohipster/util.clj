@@ -7,6 +7,8 @@
 
 (defn assoc-map [x k f] (assoc x k (mapv f (k x))))
 
+(defn unwrap [x y] (reduce #(%2 %1) x y))
+
 (defn uri [req] (or (:path-info req) (:uri req)))
 
 (defmacro map-to-querystring
