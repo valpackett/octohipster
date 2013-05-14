@@ -48,7 +48,7 @@
   {:url (:url r)
    :handler (unwrap
               (apply-kw lib/resource r)
-              (conj (:middleware r) wrap-all-the-things))})
+              (concat (:middleware r) [wrap-all-the-things]))})
 
 (defn- make-url-combiner [u]
   (fn [x] (assoc x :url (str u (:url x)))))
