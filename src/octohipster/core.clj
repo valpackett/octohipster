@@ -4,7 +4,7 @@
   (:require [liberator.core :as lib]
             [clout.core :as clout]
             [clojure.string :as string])
-  (:use [ring.middleware params keyword-params nested-params]
+  (:use [ring.middleware params keyword-params nested-params jsonp]
         [octohipster.link header middleware]
         [octohipster.handlers util]
         [octohipster host util]))
@@ -42,7 +42,8 @@
       wrap-keyword-params
       wrap-nested-params
       wrap-params
-      wrap-apply-encoder))
+      wrap-apply-encoder
+      wrap-json-with-padding))
 
 (defn gen-resource [r]
   {:url (:url r)
