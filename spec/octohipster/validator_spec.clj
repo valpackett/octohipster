@@ -3,7 +3,8 @@
         [ring.mock request]
         [octohipster.params core json]
         [octohipster.handlers json edn]
-        [octohipster json validator]))
+        [octohipster.handlers.util :only [wrap-fallback-negotiation wrap-apply-encoder]]
+        [octohipster routes json problems validator]))
 
 (defn handler [req] {:status 200})
 (def schema
@@ -12,8 +13,13 @@
    :properties {:name {:type "string"}}
    :required [:name]})
 (def app (-> handler
-             (wrap-json-schema-validator schema [wrap-handler-edn wrap-handler-json])
-             (wrap-params-formats [json-params])))
+             (wrap-json-schema-validator schema)
+             (wrap-params-formats [json-params])
+             (wrap-expand-problems {:invalid-data {:status 422
+                                                   :title "Invalid data"}})
+             (wrap-fallback-negotiation [wrap-handler-edn wrap-handler-json])
+             wrap-apply-encoder
+             ))
 
 (describe "wrap-json-schema-validator"
   (it "validates POST and PUT requests"
@@ -43,4 +49,4 @@
                  (header "Accept" "application/edn")
                  (content-type "application/json")
                  (body (jsonify {:name 1234}))
-                 app :body read-string first :level))))
+                 app :body read-string :errors first :level))))

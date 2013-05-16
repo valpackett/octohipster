@@ -1,11 +1,13 @@
 (ns octohipster.mixins
   (:require [liberator.core :as lib])
-  (:use [octohipster pagination validator util]
+  (:use [octohipster pagination problems validator util]
         [octohipster.handlers core json edn yaml hal cj util]
         [octohipster.link util]))
 
 (defn validated-resource [r]
-  (update-in r [:middleware] conj #(wrap-json-schema-validator % (:schema r) (:handlers r))))
+  (update-in r [:middleware] conj #(-> %
+                                       (wrap-json-schema-validator (:schema r))
+                                       (wrap-expand-problems (:handlers r)))))
 
 (defn handled-resource
   ([r] (handled-resource r item-handler))

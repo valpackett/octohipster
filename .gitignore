@@ -4,6 +4,7 @@
 /classes
 /checkouts
 /doc
+/src/example.clj
 pom.xml
 *.jar
 *.class

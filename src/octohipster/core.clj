@@ -51,22 +51,19 @@
           (assoc :route (-> (str (:url c) (:url r)) uri-template->clout clout/route-compile))
           (dissoc :url)))))
 
-(defn not-found-handler [req]
-  {:status 404
-   :headers {"Content-Type" "application/json"}
-   :body "{\"error\":\"Not found\"}"})
-
 (defn gen-groups [c]
   (map (partial gen-group (all-resources c)) c))
 
-(defn gen-handler [resources not-found-handler]
+(defn gen-handler [resources]
   (fn [req]
-    (let [h (->> resources
+    (if-let [h (->> resources
                  (map #(assoc % :match (clout/route-matches (:route %) req)))
                  (filter :match)
-                 first)
-          {:keys [handler match]} (or h {:handler not-found-handler})]
-      (handler (assoc req :route-params match)))))
+                 first)]
+      (let [{:keys [handler match]} h]
+        (handler (assoc req :route-params match)))
+      {:body {}
+       :problem :resource-not-found})))
 
 (defn gen-doc-resource [options d]
   (->> (group :url "", :resources [(d options)])

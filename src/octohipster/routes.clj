@@ -3,28 +3,31 @@
         [octohipster.documenters schema]
         [octohipster.params core json edn yaml]
         [octohipster.link header middleware]
-        [octohipster.handlers util]
-        [octohipster core host util]))
+        [octohipster.handlers util json edn yaml]
+        [octohipster core problems host util]))
 
 (defn routes
   "Creates a Ring handler that routes requests to provided groups
-  and documenters, using params handers and not-found-handler."
+  and documenters."
   [& body]
-  (let [defaults {:not-found-handler not-found-handler
-                  :params [json-params yaml-params edn-params]
+  (let [defaults {:params [json-params yaml-params edn-params]
                   :documenters [schema-doc schema-root-doc]
-                  :groups []}
+                  :groups []
+                  :problems {:resource-not-found {:status 404
+                                                  :title "Resource not found"}
+                             :invalid-data {:status 422
+                                            :title "Invalid data"}}}
         options (merge defaults (apply hash-map body))
-        {:keys [documenters groups params not-found-handler]} options
+        {:keys [documenters groups params]} options
+        problems (merge (:problems defaults) (:problems options))
         resources (mapcat :resources (gen-groups groups))
         raw-resources (mapcat :resources groups)
         docgen (partial gen-doc-resource
                         (-> options
                             (dissoc :documenters)
                             (assoc :resources raw-resources)))
-        resources (concat resources
-                          (map docgen documenters))]
-    (-> (gen-handler resources not-found-handler)
+        resources (concat resources (map docgen documenters))]
+    (-> resources gen-handler
         ; Links
         wrap-add-self-link
         wrap-link-header
@@ -34,7 +37,10 @@
         wrap-nested-params
         wrap-params
         ; Response
+        (wrap-expand-problems problems)
+        (wrap-fallback-negotiation [wrap-handler-json wrap-handler-edn wrap-handler-yaml])
         wrap-apply-encoder
+        wrap-expand-problem-ctype
         ; Headers, bindings, etc.
         wrap-cors
         wrap-json-with-padding

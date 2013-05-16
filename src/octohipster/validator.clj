@@ -35,12 +35,13 @@
 (defn wrap-json-schema-validator
   "Ring middleware that validates any POST/PUT requests
   (:non-query-params) against a given JSON Schema."
-  [handler schema resp-handlers]
+  [handler schema]
   (let [v (make-validator schema)]
     (fn [req]
       (if (#{:post :put} (-> req :request-method))
         (let [result (-> req :non-query-params v)]
           (if (is-success? result)
             (handler req)
-            (negotiated-response req resp-handlers 422 (to-clojure result))))
+            {:body {:errors (to-clojure result)}
+             :problem :invalid-data}))
         (handler req)))))

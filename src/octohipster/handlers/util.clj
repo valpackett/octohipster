@@ -79,15 +79,17 @@
         (assoc rsp :body ((:encoder rsp) (:body rsp)))
         rsp))))
 
-(defn negotiated-response [req handlers code data]
-  (let [h (-> (item-handler identity)
-              (unwrap handlers)
-              wrap-apply-encoder)
-        available-types (mapcat (comp :ctypes meta) handlers)
-        accept (get-in req [:headers "accept"] "application/json")
-        selected-type (neg/stringify (neg/best-allowed-content-type accept available-types))]
-    {:status code
-     :headers {"Content-Type" selected-type}
-     :body (:body (h {:representation {:media-type selected-type}
-                      :data-key :data
-                      :data data}))}))
+(defn wrap-fallback-negotiation [handler default-handlers]
+  (fn [req]
+    (let [rsp (handler req)]
+      (if (or (:encoder rsp) (string? (:body rsp)))
+        rsp
+        (let [h (unwrap identity default-handlers)
+              available-types (mapcat (comp :ctypes meta) default-handlers)
+              accept (get-in req [:headers "accept"] "application/json")
+              selected-type (neg/stringify (neg/best-allowed-content-type accept available-types))
+              r (h {:representation {:media-type selected-type}
+                    :data-key :data})]
+          (-> rsp
+              (assoc :encoder (:encoder r))
+              (assoc-in [:headers "content-type"] selected-type)))))))
