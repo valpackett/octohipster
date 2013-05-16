@@ -1,23 +1,10 @@
 (ns octohipster.routes
-  (:use 
-        [ring.middleware params keyword-params nested-params jsonp]
+  (:use [ring.middleware params keyword-params nested-params jsonp]
         [octohipster.documenters schema]
         [octohipster.params core json edn yaml]
         [octohipster.link header middleware]
         [octohipster.handlers util]
         [octohipster core host util]))
-
-(defn- wrap-all-the-things [handler]
-  (-> handler
-      wrap-add-self-link
-      wrap-link-header
-      wrap-host-bind
-      wrap-keyword-params
-      wrap-nested-params
-      wrap-params
-      wrap-apply-encoder
-      wrap-cors
-      wrap-json-with-padding))
 
 (defn routes
   "Creates a Ring handler that routes requests to provided groups
@@ -38,8 +25,20 @@
         resources (concat resources
                           (map docgen documenters))]
     (-> (gen-handler resources not-found-handler)
-        wrap-all-the-things
-        (wrap-params-formats params))))
+        ; Links
+        wrap-add-self-link
+        wrap-link-header
+        ; Params
+        (wrap-params-formats params)
+        wrap-keyword-params
+        wrap-nested-params
+        wrap-params
+        ; Response
+        wrap-apply-encoder
+        ; Headers, bindings, etc.
+        wrap-cors
+        wrap-json-with-padding
+        wrap-host-bind)))
 
 (defmacro defroutes
   "Creates a Ring handler (see routes) and defines a var with it."
