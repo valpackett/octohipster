@@ -38,6 +38,7 @@
         ; Headers, bindings, etc.
         wrap-cors
         wrap-json-with-padding
+        wrap-context-bind
         wrap-host-bind)))
 
 (defmacro defroutes

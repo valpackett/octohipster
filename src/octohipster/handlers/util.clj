@@ -14,7 +14,7 @@
   context as an argument, not a Ring request.
   When you create your own, follow the naming convention:
   wrap-handler-*, not wrap-*." 
-  (:use [octohipster util]))
+  (:use [octohipster util host]))
 
 (defn resp-common [ctx]
   {:data-key (:data-key ctx)})
@@ -32,7 +32,7 @@
   (.contains v "{"))
 
 (defn expand-clinks [x]
-  (map (fn [[k v]] {:rel (name k), :href v}) x))
+  (map (fn [[k v]] {:rel (name k), :href (str *context* v)}) x))
 
 (def process-clinks
   (memoize

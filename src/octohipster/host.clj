@@ -15,3 +15,15 @@
                           (or (get-in req [:headers "host"])
                               (-> req :server-name)))]
       (handler req))))
+
+(def ^:dynamic *context*
+  "Current URL prefix (:context)"
+  "")
+
+(defn wrap-context-bind
+  "Ring middleware that wraps the handler in a binding
+  that sets *context*."
+  [handler]
+  (fn [req]
+    (binding [*context* (:context req)]
+      (handler req))))

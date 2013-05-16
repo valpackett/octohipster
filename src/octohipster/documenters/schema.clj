@@ -1,5 +1,5 @@
 (ns octohipster.documenters.schema
-  (:use [octohipster core mixins])
+  (:use [octohipster core host mixins])
   (:require [clojure.string :as string]))
 
 (defn- schema-from-res [res]
@@ -20,7 +20,7 @@
 (defn- links-for-groups [options]
   (->> options :groups
        (map :url)
-       (map (fn [c] {:rel (string/replace c "/" "") :href c}))))
+       (map (fn [c] {:rel (string/replace c "/" "") :href (str *context* c)}))))
 
 (defn schema-root-doc [options]
   (resource
@@ -28,4 +28,5 @@
     :mixins [handled-resource]
     :exists? (fn [ctx]
                {:links (links-for-groups options)
-                :_embedded {:schema (assoc (schema-from-options options) :_links {:self {:href "/schema"}})}})))
+                :_embedded {:schema (assoc (schema-from-options options)
+                                           :_links {:self {:href (str *context* "/schema")}})}})))

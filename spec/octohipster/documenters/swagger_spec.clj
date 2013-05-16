@@ -56,6 +56,8 @@
   :groups [contact-group]
   :documenters [swagger-doc swagger-root-doc])
 
+(defn nested-site [req] (site (assoc req :context "/api")))
+
 (describe "swagger-doc"
   (it "exposes swagger api declarations"
     (should= {:apiVersion "1.0"
@@ -104,4 +106,9 @@
                       :description "Contacts"}]}
              (-> (request :get "/api-docs.json")
                  (header "Accept" "application/json")
-                 site :body unjsonify))))
+                 site :body unjsonify)))
+  (it "supports context nesting"
+    (should= "http://localhost/api"
+             (-> (request :get "/api-docs.json")
+                 (header "Accept" "application/json")
+                 nested-site :body unjsonify :basePath))))

@@ -23,5 +23,5 @@
     {:status 200
      :headers {"Content-Type" "application/hal+json;charset=UTF-8"}
      :body (-> x
-               (assoc :_links (assoc (or (:_links x) {}) :self {:href (full-uri req)}))
+               (assoc :_links (assoc (or (:_links x) {}) :self {:href (context-relative-uri req)}))
                jsonify)}))

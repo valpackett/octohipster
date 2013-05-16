@@ -8,7 +8,7 @@
 (defn swagger-root [groups]
   {:apiVersion api-version
    :swaggerVersion swagger-version
-   :basePath *host*
+   :basePath (str *host* *context*)
    :apis (map (fn [g] {:path (:url g), :description (:desc g)}) groups)})
 
 (defn swagger-root-doc [options]
@@ -42,7 +42,7 @@
         resources (:resources group)]
     {:apiVersion api-version
      :swaggerVersion swagger-version
-     :basePath *host*
+     :basePath (str *host* *context*)
      :resourcePath (:url group)
      :apis (map (partial resource->api group) resources)
      :models (into {} (map resource->model resources))}))

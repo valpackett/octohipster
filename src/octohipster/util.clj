@@ -31,15 +31,8 @@
 (defn context-relative-uri
   "Returns the full context-relative URI of a Ring request (ie. includes the query string)."
   [req]
-  (str (uri req)
-       (if-let [qs (:query-string req)]
-         (str "?" qs)
-         "")))
-
-(defn full-uri
-  "Returns the full context-relative URI of a Ring request (ie. includes the query string)."
-  [req]
-  (str (:uri req)
+  (str (:context req)
+       (uri req)
        (if-let [qs (:query-string req)]
          (str "?" qs)
          "")))
