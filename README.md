@@ -6,15 +6,29 @@ Current [semantic](http://semver.org/) version:
 
 # octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster)
 
-A REST framework for Clojure that allows you to easily build high performance web APIs that:
+Octohipster is
 
-- support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html), [Collection+JSON](http://amundsen.com/media-types/collection/) and Link/Link-Template HTTP headers; you can use hypermedia tools like [Frenetic](http://dlindahl.github.com/frenetic/) to build clients for your API)
+- a REST library/toolkit/microframework for Clojure
+- that allows you to build HTTP APIs
+- in a declarative [Webmachine](https://github.com/basho/webmachine/wiki/Overview)-like style, using [Liberator](https://github.com/clojure-liberator/liberator)
+- powered by [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware
+
+It allows you to make APIs that
+
+- support hypermedia ([HAL+JSON](http://stateless.co/hal_specification.html), [Collection+JSON](http://amundsen.com/media-types/collection/) and Link/Link-Template HTTP headers; works with [Frenetic](http://dlindahl.github.com/frenetic/))
+- support multiple output formats (JSON, EDN, YAML and any custom format)
 - have [Swagger](https://github.com/wordnik/swagger-core/wiki) documentation 
 - use [JSON Schema](http://json-schema.org) for validation *and* documentation
 - have pagination
-- are 100% [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware.
 
-Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberator).
+## Concepts
+
+- a **resource** is a single endpoint that accepts requests and returns responses
+- a **group** is a collection of resources with a single URL prefix (eg. a group /things contains resources /things/ and /things/{id}) and zero or more shared properties (usually the schema)
+- a **documenter** is a function that returns a resource which documents regular resources (Swagger, HAL root, etc)
+- a **mixin** is a function that is applied to multiple resources to give them shared behavior (eg. collection or entry behavior)
+- a **response handler** is a function that is used to encode response data to a particular content-type (JSON, EDN, YAML, etc.)
+- a **params handler** is a function that is used to decode incoming data from a particular content-type (JSON, EDN, YAML, etc.)
 
 ## Usage
 
@@ -107,7 +121,7 @@ Octohipster is based on [Liberator](https://github.com/clojure-liberator/liberat
 (defn -main [] (run-server site {:port 8080}))
 ```
 
-- [API Documentation](http://myfreeweb.github.com/octohipster) is available
+Also, [API Documentation](http://myfreeweb.github.com/octohipster) is available.
 
 ## License
 
