@@ -11,7 +11,7 @@ Octohipster is
 - a REST library/toolkit/microframework for Clojure
 - that allows you to build HTTP APIs
 - in a declarative [Webmachine](https://github.com/basho/webmachine/wiki/Overview)-like style, using [Liberator](https://github.com/clojure-liberator/liberator)
-- powered by [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html) and more with just middleware
+- powered by [Ring](https://github.com/ring-clojure/ring); you can add [rate limiting](https://github.com/myfreeweb/ring-ratelimit), [authentication](https://github.com/cemerick/friend), [metrics](http://metrics-clojure.readthedocs.org/en/latest/ring.html), [URL rewriting](https://github.com/ebaxt/ring-rewrite) and more with just middleware
 
 It allows you to make APIs that
 
