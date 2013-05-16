@@ -4,10 +4,7 @@
   (:require [liberator.core :as lib]
             [clout.core :as clout]
             [clojure.string :as string])
-  (:use [ring.middleware params keyword-params nested-params jsonp]
-        [octohipster.link header middleware]
-        [octohipster.handlers util]
-        [octohipster host util]))
+  (:use [octohipster util]))
 
 (defn resource
   "Creates a resource. Basically, compiles a map from arguments."
@@ -33,23 +30,9 @@
   "Creates a group and defines a var with it."
   [n & body] `(def ~n (group ~@body)))
 
-(defn- wrap-all-the-things [handler]
-  (-> handler
-      wrap-add-self-link
-      wrap-link-header
-      wrap-host-bind
-      wrap-cors
-      wrap-keyword-params
-      wrap-nested-params
-      wrap-params
-      wrap-apply-encoder
-      wrap-json-with-padding))
-
 (defn gen-resource [r]
   {:url (:url r)
-   :handler (unwrap
-              (apply-kw lib/resource r)
-              (concat (:middleware r) [wrap-all-the-things]))})
+   :handler (unwrap (apply-kw lib/resource r) (:middleware r))})
 
 (defn- make-url-combiner [u]
   (fn [x] (assoc x :url (str u (:url x)))))
