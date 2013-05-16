@@ -10,6 +10,7 @@
                  [cheshire "5.1.1"]
                  [clj-yaml "0.4.0"]
                  [inflections "0.8.0"]
+                 [org.bovinegenius/exploding-fish "0.3.3"]
                  [com.github.fge/json-schema-validator "2.1.3"]
                  [com.damnhandy/handy-uri-templates "1.1.7"]]
   :profiles {:dev {:dependencies [[speclj "2.6.1"                 :exclusions [org.clojure/clojure]]

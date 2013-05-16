@@ -1,12 +1,10 @@
 (ns octohipster.link.util
-  (:use [octohipster util])
+  (:use [octohipster util]
+        [org.bovinegenius.exploding-fish :only [normalize-path]])
   (:require [clojure.string :as string]))
 
-(defn un-dotdot [x]
-  (string/replace x #"/[^/]+/\.\." ""))
-
 (defn prepend-to-href [uri-context l]
-  (assoc l :href (un-dotdot (str uri-context (:href l)))))
+  (assoc l :href (normalize-path (str uri-context (:href l)))))
 
 (defn response-links-and-templates [rsp]
   (concatv

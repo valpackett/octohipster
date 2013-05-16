@@ -1,13 +1,14 @@
 (ns octohipster.handlers.cj
   (:use [octohipster.handlers util]
         [octohipster.link util]
-        [octohipster json util]))
+        [octohipster json util]
+        [org.bovinegenius.exploding-fish :only [normalize-path]]))
 
 (defn- transform-map [[k v]]
   {:name k, :value (if (map? v) (mapv transform-map v) v)})
 
 (defn- cj-wrap [ctx rel m]
-  {:href (un-dotdot (str (or (-> ctx :request :context) "") (self-link ctx rel m)))
+  {:href (normalize-path (str (or (-> ctx :request :context) "") (self-link ctx rel m)))
    :data (mapv transform-map m)})
 
 (defhandler wrap-handler-collection-json

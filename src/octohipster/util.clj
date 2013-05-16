@@ -11,23 +11,6 @@
 
 (defn uri [req] (or (:path-info req) (:uri req)))
 
-(defmacro map-to-querystring
-  "Turns a map into a query sting, eg. {:abc 123 :def ' '} -> ?abc=123&def=+."
-  [m]
-  `(if (empty? ~m) ""
-     (->> ~m
-          (map #(str (-> % key name (URLEncoder/encode "UTF-8"))
-                     "="
-                     (-> % val str  (URLEncoder/encode "UTF-8"))))
-          (interpose "&")
-          (apply str "?"))))
-
-(defn alter-query-params [req x]
-  (map-to-querystring (merge (:query-params req) x)))
-
-(defn uri-alter-query-params [req x]
-  (str (uri req) (alter-query-params req x)))
-
 (defn uri-template-for-rel [ctx rel]
   (-> (filter #(= (:rel %) rel) (or (-> ctx :link-templates) []))
       first
