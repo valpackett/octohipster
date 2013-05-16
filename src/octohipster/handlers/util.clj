@@ -14,7 +14,9 @@
   context as an argument, not a Ring request.
   When you create your own, follow the naming convention:
   wrap-handler-*, not wrap-*." 
-  (:use [octohipster util host]))
+  (:require [liberator.conneg :as neg])
+  (:use [octohipster util host]
+        [octohipster.handlers core]))
 
 (defn resp-common [ctx]
   {:data-key (:data-key ctx)})
@@ -76,3 +78,16 @@
       (if-let [enc (:encoder rsp)]
         (assoc rsp :body ((:encoder rsp) (:body rsp)))
         rsp))))
+
+(defn negotiated-response [req handlers code data]
+  (let [h (-> (item-handler identity)
+              (unwrap handlers)
+              wrap-apply-encoder)
+        available-types (mapcat (comp :ctypes meta) handlers)
+        accept (get-in req [:headers "accept"] "application/json")
+        selected-type (neg/stringify (neg/best-allowed-content-type accept available-types))]
+    {:status code
+     :headers {"Content-Type" selected-type}
+     :body (:body (h {:representation {:media-type selected-type}
+                      :data-key :data
+                      :data data}))}))

@@ -6,7 +6,9 @@
            [com.fasterxml.jackson.databind JsonNode ObjectMapper]
            [java.io StringWriter])
   (:require [cheshire.core :as json]
-            [cheshire.factory :as factory]))
+            [cheshire.factory :as factory])
+  (:use [octohipster json util]
+        [octohipster.handlers util]))
 
 (def mapper (ObjectMapper.))
 
@@ -24,23 +26,21 @@
 (defn is-success? [^ProcessingReport report]
   (.isSuccess report))
 
-(defn to-json [^ProcessingReport report]
+(defn to-clojure [^ProcessingReport report]
   (let [sw (StringWriter.)
         jgen (.createJsonGenerator (or factory/*json-factory* factory/json-factory) sw)]
     (.writeTree ^ObjectMapper mapper jgen (.asJson report))
-    (.toString sw)))
+    (unjsonify (.toString sw))))
 
 (defn wrap-json-schema-validator
   "Ring middleware that validates any POST/PUT requests
   (:non-query-params) against a given JSON Schema."
-  [handler schema]
+  [handler schema resp-handlers]
   (let [v (make-validator schema)]
     (fn [req]
-      (if (#{:post :put :patch} (-> req :request-method))
+      (if (#{:post :put} (-> req :request-method))
         (let [result (-> req :non-query-params v)]
           (if (is-success? result)
             (handler req)
-            {:status 422
-             :headers {"Content-Type" "application/json;charset=utf-8"}
-             :body (to-json result)}))
+            (negotiated-response req resp-handlers 422 (to-clojure result))))
         (handler req)))))
