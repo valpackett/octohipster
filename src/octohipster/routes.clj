@@ -1,7 +1,7 @@
 (ns octohipster.routes
   (:use [ring.middleware params keyword-params nested-params jsonp]
         [octohipster.documenters schema]
-        [octohipster.params core json edn yaml]
+        [octohipster.params core json cj edn yaml]
         [octohipster.link header middleware]
         [octohipster.handlers util json edn yaml]
         [octohipster core problems host util]))
@@ -10,7 +10,7 @@
   "Creates a Ring handler that routes requests to provided groups
   and documenters."
   [& body]
-  (let [defaults {:params [json-params yaml-params edn-params]
+  (let [defaults {:params [json-params collection-json-params yaml-params edn-params]
                   :documenters [schema-doc schema-root-doc]
                   :groups []
                   :problems {:resource-not-found {:status 404

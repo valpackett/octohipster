@@ -1,7 +1,7 @@
 (ns octohipster.params-spec
   (:use [speclj core]
         [ring.mock request]
-        [octohipster.params core json yaml edn]))
+        [octohipster.params core json cj yaml edn]))
 
 (defn app [req] (select-keys req [:non-query-params :params]))
 
@@ -13,6 +13,15 @@
               (-> (request :post "/")
                   (content-type "application/json")
                   (body "{\"a\":1}"))))))
+
+(describe "collection-json-params"
+  (it "appends params to :non-query-params and :params"
+    (should= {:non-query-params {:a 1}
+              :params {:a 1}}
+             ((wrap-params-formats app [collection-json-params])
+              (-> (request :post "/")
+                  (content-type "application/vnd.collection+json")
+                  (body "{\"template\":{\"data\":[{\"name\":\"a\",\"value\":1}]}}"))))))
 
 (describe "yaml-params"
   (it "appends params to :non-query-params and :params"
