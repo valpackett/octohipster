@@ -44,9 +44,9 @@
                  (body (jsonify {:name 1234}))
                  app :status)))
   (it "uses content negotiation"
-    (should= "error"
+    (should= "/problems/invalid-data" ; note: not using host binding in test -> no localhost
              (-> (request :post "/")
                  (header "Accept" "application/edn")
                  (content-type "application/json")
                  (body (jsonify {:name 1234}))
-                 app :body read-string :errors first :level))))
+                 app :body read-string :problemType))))

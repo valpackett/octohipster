@@ -65,4 +65,12 @@
       :groups [{:url "", :resources [dchello]}]
       :documenters [dcdocumenter])
     (should= {:things [{:url "/what"}]}
-             (-> (request :get "/test-doc") dcsite :body unjsonify))))
+             (-> (request :get "/test-doc") dcsite :body unjsonify)))
+
+  (it "returns 404 as a problem"
+    (let [{:keys [status headers body]} (dcsite (request :get "/whatever123"))]
+      (should= 404 status)
+      (should= "application/api-problem+json" (get headers "content-type"))
+      (should= {:problemType "http://localhost/problems/resource-not-found"
+                :title "Resource not found"}
+               (unjsonify body)))))
