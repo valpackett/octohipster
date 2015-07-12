@@ -4,7 +4,7 @@ Current [semantic](http://semver.org/) version:
 [octohipster "0.2.1-SNAPSHOT"]
 ```
 
-# octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster)
+# octohipster [![Build Status](https://travis-ci.org/myfreeweb/octohipster.png?branch=master)](https://travis-ci.org/myfreeweb/octohipster) [![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](http://unlicense.org)
 
 Octohipster is
 
@@ -123,18 +123,15 @@ It allows you to make APIs that
 
 Also, [API Documentation](http://myfreeweb.github.com/octohipster) is available.
 
+## Contributing
+
+By participating in this project you agree to follow the [Contributor Code of Conduct](http://contributor-covenant.org/version/1/1/0/).
+
+Please take over the whole project!  
+I don't use Clojure a lot nowadays.  
+Talk to me: <greg@unrelenting.technology>.
+
 ## License
 
-Copyright 2013 Greg V <floatboth@me.com>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+This is free and unencumbered software released into the public domain.  
+For more information, please refer to the `UNLICENSE` file or [unlicense.org](http://unlicense.org).
